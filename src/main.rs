@@ -1,4 +1,5 @@
 use ark_ec::short_weierstrass_jacobian::GroupProjective;
+use std::time::Duration;
 use ark_ff::PrimeField;
 use std::time::Instant;
 use ark_ec::msm;
@@ -18,35 +19,44 @@ use ark_std::rand::{
 
 fn main() {
     let mut rng = thread_rng();
-    random_multi_scalar_mul(100, 5, &mut rng);
+    let (points, scalars) = gen_random_vectors(100, &mut rng);
+    benchmark_msm(&points[..], &scalars[..], 10);
 }
 
-pub fn random_multi_scalar_mul<R: RngCore>(
+pub fn gen_random_vectors<R: RngCore>(
     n: usize,
-    iterations: usize,
     rng: &mut R,
-) -> () {
+) -> (Vec<bls377::G1Affine>, Vec<<bls377::Fr as PrimeField>::BigInt>) {
     let num_bytes = bls377::Fr::zero().serialized_size();
-    let mut points = Vec::<G1Affine>::new();
+    let mut points = Vec::<bls377::G1Affine>::new();
     let mut scalars = Vec::<<bls377::Fr as PrimeField>::BigInt>::new();
-    for i in 0..n {
-        let mut bytes = vec![0; num_bytes];
-        let mut scalar;
-        loop {
-            rng.fill_bytes(&mut bytes[..]);
-            scalar = bls377::Fr::from_random_bytes(&bytes);
-            if scalar.is_some() {
-                break;
-            }
+    let mut bytes = vec![0; num_bytes];
+    let mut scalar;
+    loop {
+        rng.fill_bytes(&mut bytes[..]);
+        scalar = bls377::Fr::from_random_bytes(&bytes);
+        if scalar.is_some() {
+            break;
         }
-        scalars.push(scalar.unwrap().into_repr());
-
-        let mut point: G1Projective = rng.gen();
-        points.push(point.into());
     }
-    let start = Instant::now();
-    let result = ark_ec::msm::VariableBaseMSM::multi_scalar_mul(&points[..], &scalars[..]);
-    let duration = start.elapsed();
+    scalars.push(scalar.unwrap().into_repr());
 
-    println!("Time to execute MSM is: {:?}", duration);
+    let mut point: bls377::G1Projective = rng.gen();
+    points.push(point.into());
+
+    (points, scalars)
+}
+
+pub fn benchmark_msm(
+    points: &[bls377::G1Affine],
+    scalars: &[<bls377::Fr as PrimeField>::BigInt],
+    iterations: u32,
+) -> () {
+    let mut duration = Duration::ZERO;
+    for i in 0..iterations {
+        let start = Instant::now();
+        let result = ark_ec::msm::VariableBaseMSM::multi_scalar_mul(&points[..], &scalars[..]);
+        duration += start.elapsed();
+    }
+    println!("Average time to execute MSM is: {:?}", duration / iterations);
 }
