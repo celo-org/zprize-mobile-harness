@@ -19,8 +19,10 @@ use ark_std::rand::{
 
 fn main() {
     let mut rng = thread_rng();
-    let (points, scalars) = gen_random_vectors(100, &mut rng);
-    benchmark_msm(&points[..], &scalars[..], 10);
+    println!("Generating elements");
+    let (points, scalars) = gen_random_vectors(4096, &mut rng);
+    println!("Generated elements");
+    benchmark_msm(&points[..], &scalars[..], 1);
 }
 
 pub fn gen_random_vectors<R: RngCore>(
@@ -32,18 +34,19 @@ pub fn gen_random_vectors<R: RngCore>(
     let mut scalars = Vec::<<bls377::Fr as PrimeField>::BigInt>::new();
     let mut bytes = vec![0; num_bytes];
     let mut scalar;
-    loop {
-        rng.fill_bytes(&mut bytes[..]);
-        scalar = bls377::Fr::from_random_bytes(&bytes);
-        if scalar.is_some() {
-            break;
+    for i in 0..n {
+        loop {
+            rng.fill_bytes(&mut bytes[..]);
+            scalar = bls377::Fr::from_random_bytes(&bytes);
+            if scalar.is_some() {
+                break;
+            }
         }
+        scalars.push(scalar.unwrap().into_repr());
+
+        let mut point: bls377::G1Projective = rng.gen();
+        points.push(point.into());
     }
-    scalars.push(scalar.unwrap().into_repr());
-
-    let mut point: bls377::G1Projective = rng.gen();
-    points.push(point.into());
-
     (points, scalars)
 }
 
