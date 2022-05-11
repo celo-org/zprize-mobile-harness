@@ -16,3 +16,9 @@ ark-ed-on-bls12-381 = "0.3"
 ark-poly = "0.3"
 ark-poly-commit = "0.3"
 rand = "0.8.0"
+
+[lib]
+crate-type = ["rlib", "dylib"]
+
+[target.'cfg(target_os="android")'.dependencies]
+jni = { version = "0.5", default-features = false }
