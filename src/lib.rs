@@ -1,4 +1,6 @@
 use ark_ec::short_weierstrass_jacobian::GroupProjective;
+use ark_serialize::CanonicalDeserialize;
+use std::fs::File;
 use std::time::Duration;
 use ark_ff::PrimeField;
 use std::time::Instant;
@@ -41,6 +43,24 @@ pub fn gen_random_vectors<R: RngCore>(
     (points, scalars)
 }
 
+pub fn serialize_input(
+    points: &[bls377::G1Affine],
+    scalars: &[<bls377::Fr as PrimeField>::BigInt],
+) -> () {
+    let f1 = File::create("./points").unwrap();
+    let f2 = File::create("./scalars").unwrap();
+    points.serialize(&f1);
+    scalars.serialize(&f2);
+}
+
+pub fn deserialize_input(
+) -> (Vec<bls377::G1Affine>, Vec<<bls377::Fr as PrimeField>::BigInt>) {
+    let f1 = File::open("./points").unwrap();
+    let f2 = File::open("./scalars").unwrap();
+    let points = Vec::<bls377::G1Affine>::deserialize(&f1).unwrap();
+    let scalars = Vec::<<bls377::Fr as PrimeField>::BigInt>::deserialize(&f2).unwrap();
+    (points, scalars)
+}
 pub fn benchmark_msm(
     points: &[bls377::G1Affine],
     scalars: &[<bls377::Fr as PrimeField>::BigInt],
