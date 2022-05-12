@@ -47,16 +47,20 @@ pub fn serialize_input(
     points: &[bls377::G1Affine],
     scalars: &[<bls377::Fr as PrimeField>::BigInt],
 ) -> () {
-    let f1 = File::create("./points").unwrap();
-    let f2 = File::create("./scalars").unwrap();
+    //let f1 = File::create("./points").unwrap();
+    //let f2 = File::create("./scalars").unwrap();
+    let f1 = File::create("/data/user/0/com.example.zprize/files/points").unwrap();
+    let f2 = File::create("/data/user/0/com.example.zprize/files/scalars").unwrap();
     points.serialize(&f1);
     scalars.serialize(&f2);
 }
 
 pub fn deserialize_input(
 ) -> (Vec<bls377::G1Affine>, Vec<<bls377::Fr as PrimeField>::BigInt>) {
-    let f1 = File::open("./points").unwrap();
-    let f2 = File::open("./scalars").unwrap();
+    //let f1 = File::open("./points").unwrap();
+    //let f2 = File::open("./scalars").unwrap();
+    let f1 = File::open("/data/user/0/com.example.zprize/files/points").unwrap();
+    let f2 = File::open("/data/user/0/com.example.zprize/files/scalars").unwrap();
     let points = Vec::<bls377::G1Affine>::deserialize(&f1).unwrap();
     let scalars = Vec::<<bls377::Fr as PrimeField>::BigInt>::deserialize(&f2).unwrap();
     (points, scalars)
@@ -109,8 +113,10 @@ pub mod android {
         // Retake pointer so that we can use it below and allow memory to be freed when it goes out of scope.
         //let world_ptr = CString::from_raw(world);
         let mut rng = thread_rng();
-        let (points, scalars) = gen_random_vectors(65536, &mut rng);
-        benchmark_msm(&points[..], &scalars[..], 1);
+        let (points, scalars) = gen_random_vectors(8, &mut rng);
+        serialize_input(&points, &scalars);
+        let (de_points, de_scalars) = deserialize_input();
+        benchmark_msm(&de_points[..], &de_scalars[..], 1);
 
         // output to check that code ran
         let output = env.new_string("hello epsilon").unwrap();//env.new_string(world_ptr.to_str().unwrap()).expect("Couldn't create java string!");
