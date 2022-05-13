@@ -1,4 +1,5 @@
 use ark_ec::short_weierstrass_jacobian::GroupProjective;
+use ark_serialize::Write;
 use ark_serialize::CanonicalDeserialize;
 use std::fs::File;
 use std::time::Duration;
@@ -68,39 +69,34 @@ pub fn deserialize_input(
     (points, scalars)
 }
 pub fn benchmark_msm(
+    output_dir: &str,
     points: &[bls377::G1Affine],
     scalars: &[<bls377::Fr as PrimeField>::BigInt],
     iterations: u32,
 ) -> () {
-    let mut duration = Duration::ZERO;
+    let output_path = format!("{}{}", output_dir, "/results.txt");
+    let mut output_file = File::create(output_path).expect("output file creation failed");
+    let mut total_duration = Duration::ZERO;
     for i in 0..iterations {
         let start = Instant::now();
         let result = ark_ec::msm::VariableBaseMSM::multi_scalar_mul(&points[..], &scalars[..]);
-        duration += start.elapsed();
+        let time = start.elapsed();
+        write!(output_file, "iteration {}: {:?}\n", i+1, time);
+        total_duration += time;
     }
-    println!("Average time to execute MSM with {} points and {} scalars and {} iterations is: {:?}", points.len(), scalars.len(), iterations, duration / iterations);
+    let mean = total_duration / iterations;
+    write!(output_file, "Mean across all iterations: {:?}", mean);
+    println!("Average time to execute MSM with {} points and {} scalars and {} iterations is: {:?}", points.len(), scalars.len(), iterations, mean);
 }
 
-use std::os::raw::{c_char};
-use std::ffi::{CString, CStr};
-
-#[no_mangle]
-pub extern fn rust_greeting(to: *const c_char) -> *mut c_char {
-    let c_str = unsafe { CStr::from_ptr(to) };
-    let recipient = match c_str.to_str() {
-        Err(_) => "there",
-        Ok(string) => string,
-    };
-
-    CString::new("Hello ".to_owned() + recipient).unwrap().into_raw()
-}
 
 /// Expose the JNI interface for android below
 #[cfg(target_os="android")]
 #[allow(non_snake_case)]
 pub mod android {
        extern crate jni;
-  
+       use std::os::raw::{c_char};
+       use std::ffi::{CString, CStr};
        use super::*;
        use self::jni::JNIEnv;
        use self::jni::objects::{JClass, JString};
@@ -116,23 +112,11 @@ pub mod android {
         let rust_dir = CStr::from_ptr(dir).to_str().expect("string invalid");
         serialize_input(&rust_dir, &points, &scalars);
         let (de_points, de_scalars) = deserialize_input(&rust_dir);
-        benchmark_msm(&de_points[..], &de_scalars[..], 1);
+        benchmark_msm(&rust_dir, &de_points[..], &de_scalars[..], 1);
 
         // output to check that code ran
         let output = env.new_string("hello epsilon").unwrap();//env.new_string(world_ptr.to_str().unwrap()).expect("Couldn't create java string!");
 
         output.into_inner()
       }
-
-    #[no_mangle]
-    //Java_com_example_greetings_RustGreetings_greeting
-    pub unsafe extern fn Java_com_example_zprize_RustMSM_greeting(env: JNIEnv, _: JClass, java_pattern: JString) -> jstring {
-        // Our Java companion code might pass-in "world" as a string, hence the name.
-        let world = rust_greeting(env.get_string(java_pattern).expect("invalid pattern string").as_ptr());
-        // Retake pointer so that we can use it below and allow memory to be freed when it goes out of scope.
-        let world_ptr = CString::from_raw(world);
-        let output = env.new_string(world_ptr.to_str().unwrap()).expect("Couldn't create java string!");
-
-        output.into_inner()
-    }
 }
