@@ -4,8 +4,9 @@ use celo_zprize::{serialize_input, deserialize_input, gen_random_vectors, benchm
 fn main() {
     let mut rng = thread_rng();
     println!("Generating elements");
-    let (points, scalars) = deserialize_input(); //gen_random_vectors(8, &mut rng);
-    //serialize_input(&points, &scalars);
+    let dir = ".";
+    let (points, scalars) = deserialize_input(&dir); //gen_random_vectors(8, &mut rng);
+    //serialize_input(".", &points, &scalars);
     println!("Generated elements");
     benchmark_msm(&points[..], &scalars[..], 1);
 }

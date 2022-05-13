@@ -44,23 +44,25 @@ pub fn gen_random_vectors<R: RngCore>(
 }
 
 pub fn serialize_input(
+    dir: &str,
     points: &[bls377::G1Affine],
     scalars: &[<bls377::Fr as PrimeField>::BigInt],
 ) -> () {
-    //let f1 = File::create("./points").unwrap();
-    //let f2 = File::create("./scalars").unwrap();
-    let f1 = File::create("/data/user/0/com.example.zprize/files/points").unwrap();
-    let f2 = File::create("/data/user/0/com.example.zprize/files/scalars").unwrap();
+    let points_path = format!("{}{}", dir, "/points");
+    let scalars_path = format!("{}{}", dir, "/scalars");
+    let f1 = File::create(points_path).unwrap();
+    let f2 = File::create(scalars_path).unwrap();
     points.serialize(&f1);
     scalars.serialize(&f2);
 }
 
 pub fn deserialize_input(
+    dir: &str,
 ) -> (Vec<bls377::G1Affine>, Vec<<bls377::Fr as PrimeField>::BigInt>) {
-    //let f1 = File::open("./points").unwrap();
-    //let f2 = File::open("./scalars").unwrap();
-    let f1 = File::open("/data/user/0/com.example.zprize/files/points").unwrap();
-    let f2 = File::open("/data/user/0/com.example.zprize/files/scalars").unwrap();
+    let points_path = format!("{}{}", dir, "/points");
+    let scalars_path = format!("{}{}", dir, "/scalars");
+    let f1 = File::open(points_path).unwrap();
+    let f2 = File::open(scalars_path).unwrap();
     let points = Vec::<bls377::G1Affine>::deserialize(&f1).unwrap();
     let scalars = Vec::<<bls377::Fr as PrimeField>::BigInt>::deserialize(&f2).unwrap();
     (points, scalars)
@@ -107,24 +109,19 @@ pub mod android {
 
        #[no_mangle]
        //Java_com_example_greetings_RustGreetings_greeting
-       pub unsafe extern fn Java_com_example_zprize_RustMSM_benchmarkMSM(env: JNIEnv, _: JClass, java_pattern: JString) -> jstring {
-        // Our Java companion code might pass-in "world" as a string, hence the name.
-        //let world = rust_greeting(env.get_string(java_pattern).expect("invalid pattern string").as_ptr());
-        // Retake pointer so that we can use it below and allow memory to be freed when it goes out of scope.
-        //let world_ptr = CString::from_raw(world);
+       pub unsafe extern fn Java_com_example_zprize_RustMSM_benchmarkMSM(env: JNIEnv, _: JClass, java_dir: JString) -> jstring {
         let mut rng = thread_rng();
         let (points, scalars) = gen_random_vectors(8, &mut rng);
-        serialize_input(&points, &scalars);
-        let (de_points, de_scalars) = deserialize_input();
+        let dir = env.get_string(java_dir).expect("invalid string").as_ptr();
+        let rust_dir = CStr::from_ptr(dir).to_str().expect("string invalid");
+        serialize_input(&rust_dir, &points, &scalars);
+        let (de_points, de_scalars) = deserialize_input(&rust_dir);
         benchmark_msm(&de_points[..], &de_scalars[..], 1);
 
         // output to check that code ran
         let output = env.new_string("hello epsilon").unwrap();//env.new_string(world_ptr.to_str().unwrap()).expect("Couldn't create java string!");
 
         output.into_inner()
-           //let mut rng = thread_rng();
-           //let (points, scalars) = gen_random_vectors(8, &mut rng);
-  //     benchmark_msm(&points[..], &scalars[..], 100);
       }
 
     #[no_mangle]

@@ -11,11 +11,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         RustMSM g = new RustMSM();
-        String r = g.runMSM("hi");
         File dir = getFilesDir();
+        String dir_path = dir.getAbsolutePath();
+        String r = g.runMSM(dir_path);
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ((TextView)findViewById(R.id.greetingField)).setText("hello beta");
+        ((TextView)findViewById(R.id.greetingField)).setText("hello charlie");
     }
 
     static {
