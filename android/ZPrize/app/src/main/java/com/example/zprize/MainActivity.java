@@ -4,6 +4,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.File;
 import android.os.Bundle;
+import android.text.InputType;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.os.Bundle;
 import android.view.View;
@@ -42,9 +44,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        EditText iters = new EditText(this);
+        iters.setHint("#iterations");
+        iters.setInputType(InputType.TYPE_CLASS_NUMBER);
+
         // Add Button to LinearLayout
         if (linearLayout != null) {
             linearLayout.addView(btnShow);
+            linearLayout.addView(iters);
         }
 
     }
