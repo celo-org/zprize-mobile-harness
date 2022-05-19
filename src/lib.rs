@@ -105,14 +105,19 @@ pub mod android {
 
        #[no_mangle]
        //Java_com_example_greetings_RustGreetings_greeting
-       pub unsafe extern fn Java_com_example_zprize_RustMSM_benchmarkMSM(env: JNIEnv, _: JClass, java_dir: JString) -> jstring {
+       pub unsafe extern fn Java_com_example_zprize_RustMSM_benchmarkMSM(env: JNIEnv, _: JClass, java_dir: JString, java_iters: JString) -> jstring {
         let mut rng = thread_rng();
         let (points, scalars) = gen_random_vectors(8, &mut rng);
         let dir = env.get_string(java_dir).expect("invalid string").as_ptr();
         let rust_dir = CStr::from_ptr(dir).to_str().expect("string invalid");
-        //serialize_input(&rust_dir, &points, &scalars);
-        //let (de_points, de_scalars) = deserialize_input(&rust_dir);
-        benchmark_msm(&rust_dir, &points[..], &scalars[..], 1);
+
+        let iters = env.get_string(java_iters).expect("invalid string").as_ptr();
+        let rust_iters = CStr::from_ptr(iters).to_str().expect("string invalid");
+        let iters_val: u32 = rust_iters.parse().unwrap();
+
+        serialize_input(&rust_dir, &points, &scalars);
+        let (de_points, de_scalars) = deserialize_input(&rust_dir);
+        benchmark_msm(&rust_dir, &points[..], &scalars[..], iters_val);
 
         // output to check that code ran
         let output = env.new_string("hello epsilon").unwrap();//env.new_string(world_ptr.to_str().unwrap()).expect("Couldn't create java string!");

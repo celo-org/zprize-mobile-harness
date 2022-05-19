@@ -1,10 +1,10 @@
 package com.example.zprize;
 
 public class RustMSM {
-    private static native String benchmarkMSM(final String dir);
+    private static native String benchmarkMSM(final String dir, final String iters);
 
-    public String runMSM(String dir) {
-        return benchmarkMSM(dir);
+    public String runMSM(String dir, String iters) {
+        return benchmarkMSM(dir, iters);
     }
 
     private static native String greeting(final String pattern);

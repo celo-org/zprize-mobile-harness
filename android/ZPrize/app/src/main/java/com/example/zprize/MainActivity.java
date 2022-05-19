@@ -29,24 +29,29 @@ public class MainActivity extends AppCompatActivity {
 
         LinearLayout linearLayout = findViewById(R.id.rootContainer);
 
+
         // Create Button Dynamically
         Button btnShow = new Button(this);
         btnShow.setText("Press to run");
         btnShow.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        EditText iters = new EditText(this);
+        iters.setHint("#iterations");
+        iters.setInputType(InputType.TYPE_CLASS_NUMBER);
+
         btnShow.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 RustMSM g = new RustMSM();
                 File dir = getFilesDir();
                 String dir_path = dir.getAbsolutePath();
-                String r = g.runMSM(dir_path);
+                String iters_val = iters.getText().toString();
+                String r = g.runMSM(dir_path, iters_val);
                 Toast.makeText(MainActivity.this, dir_path, Toast.LENGTH_LONG).show();
             }
         });
 
-        EditText iters = new EditText(this);
-        iters.setHint("#iterations");
-        iters.setInputType(InputType.TYPE_CLASS_NUMBER);
+
 
         // Add Button to LinearLayout
         if (linearLayout != null) {
