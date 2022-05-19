@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
                 File dir = getFilesDir();
                 String dir_path = dir.getAbsolutePath();
                 String r = g.runMSM(dir_path);
-                Toast.makeText(MainActivity.this, "welcome alpha!", Toast.LENGTH_LONG).show();
+                Toast.makeText(MainActivity.this, dir_path, Toast.LENGTH_LONG).show();
             }
         });
 

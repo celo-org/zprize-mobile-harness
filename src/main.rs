@@ -5,9 +5,9 @@ fn main() {
     let mut rng = thread_rng();
     println!("Generating elements");
     let dir = ".";
-    //let (points, scalars) = deserialize_input(&dir); //gen_random_vectors(8, &mut rng);
     let (points, scalars) = gen_random_vectors(8, &mut rng);
-    //serialize_input(".", &points, &scalars);
+    serialize_input(".", &points, &scalars);
+    let (points, scalars) = deserialize_input(&dir); //gen_random_vectors(8, &mut rng);
     println!("Generated elements");
     benchmark_msm(&dir, &points[..], &scalars[..], 10);
 }

@@ -110,13 +110,14 @@ pub mod android {
         let (points, scalars) = gen_random_vectors(8, &mut rng);
         let dir = env.get_string(java_dir).expect("invalid string").as_ptr();
         let rust_dir = CStr::from_ptr(dir).to_str().expect("string invalid");
-        serialize_input(&rust_dir, &points, &scalars);
-        let (de_points, de_scalars) = deserialize_input(&rust_dir);
-        benchmark_msm(&rust_dir, &de_points[..], &de_scalars[..], 1);
+        //serialize_input(&rust_dir, &points, &scalars);
+        //let (de_points, de_scalars) = deserialize_input(&rust_dir);
+        benchmark_msm(&rust_dir, &points[..], &scalars[..], 1);
 
         // output to check that code ran
         let output = env.new_string("hello epsilon").unwrap();//env.new_string(world_ptr.to_str().unwrap()).expect("Couldn't create java string!");
 
-        output.into_inner()
+        //output.into_inner()
+        java_dir.into_inner()
       }
 }
