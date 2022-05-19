@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
                 String iters_val = iters.getText().toString();
                 String numElemsVal = numElems.getText().toString();
                 String r = g.runMSM(dir_path, iters_val, numElemsVal);
-                Toast.makeText(MainActivity.this, dir_path, Toast.LENGTH_LONG).show();
+                Toast.makeText(MainActivity.this, r, Toast.LENGTH_LONG).show();
             }
         });
 

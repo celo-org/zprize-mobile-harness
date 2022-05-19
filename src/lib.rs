@@ -1,4 +1,5 @@
 use ark_ec::short_weierstrass_jacobian::GroupProjective;
+use duration_string::DurationString;
 use ark_serialize::Write;
 use ark_serialize::CanonicalDeserialize;
 use std::fs::File;
@@ -68,12 +69,13 @@ pub fn deserialize_input(
     let scalars = Vec::<<bls377::Fr as PrimeField>::BigInt>::deserialize(&f2).unwrap();
     (points, scalars)
 }
+
 pub fn benchmark_msm(
     output_dir: &str,
     points: &[bls377::G1Affine],
     scalars: &[<bls377::Fr as PrimeField>::BigInt],
     iterations: u32,
-) -> () {
+) -> String {
     let output_path = format!("{}{}", output_dir, "/results.txt");
     let mut output_file = File::create(output_path).expect("output file creation failed");
     let mut total_duration = Duration::ZERO;
@@ -87,6 +89,8 @@ pub fn benchmark_msm(
     let mean = total_duration / iterations;
     write!(output_file, "Mean across all iterations: {:?}", mean);
     println!("Average time to execute MSM with {} points and {} scalars and {} iterations is: {:?}", points.len(), scalars.len(), iterations, mean);
+    let d: String = DurationString::from(mean).into();
+    d
 }
 
 
@@ -124,12 +128,11 @@ pub mod android {
 
         serialize_input(&rust_dir, &points, &scalars);
         let (de_points, de_scalars) = deserialize_input(&rust_dir);
-        benchmark_msm(&rust_dir, &points[..], &scalars[..], iters_val);
+        let mean_time = benchmark_msm(&rust_dir, &points[..], &scalars[..], iters_val);
 
         // output to check that code ran
-        let output = env.new_string("hello epsilon").unwrap();//env.new_string(world_ptr.to_str().unwrap()).expect("Couldn't create java string!");
+        let output = env.new_string(mean_time).unwrap();//env.new_string(world_ptr.to_str().unwrap()).expect("Couldn't create java string!");
 
-        //output.into_inner()
-        java_dir.into_inner()
+        output.into_inner()
       }
 }
