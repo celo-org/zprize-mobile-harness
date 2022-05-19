@@ -105,9 +105,16 @@ pub mod android {
 
        #[no_mangle]
        //Java_com_example_greetings_RustGreetings_greeting
-       pub unsafe extern fn Java_com_example_zprize_RustMSM_benchmarkMSM(env: JNIEnv, _: JClass, java_dir: JString, java_iters: JString) -> jstring {
+       pub unsafe extern fn Java_com_example_zprize_RustMSM_benchmarkMSM(env: JNIEnv, _: JClass, java_dir: JString, java_iters: JString, java_num_elems: JString) -> jstring {
         let mut rng = thread_rng();
-        let (points, scalars) = gen_random_vectors(8, &mut rng);
+        let base: i32 = 2;
+
+        let num_elems = env.get_string(java_num_elems).expect("invalid string").as_ptr();
+        let rust_num_elems = CStr::from_ptr(num_elems).to_str().expect("string invalid");
+        let num_elems_val: u32 = rust_num_elems.parse().unwrap();
+        let num_elems_exp = base.pow(num_elems_val);
+
+        let (points, scalars) = gen_random_vectors(num_elems_exp.try_into().unwrap(), &mut rng);
         let dir = env.get_string(java_dir).expect("invalid string").as_ptr();
         let rust_dir = CStr::from_ptr(dir).to_str().expect("string invalid");
 

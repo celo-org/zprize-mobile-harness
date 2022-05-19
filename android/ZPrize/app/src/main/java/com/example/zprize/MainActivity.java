@@ -39,6 +39,10 @@ public class MainActivity extends AppCompatActivity {
         iters.setHint("#iterations");
         iters.setInputType(InputType.TYPE_CLASS_NUMBER);
 
+        EditText numElems = new EditText(this);
+        numElems.setHint("#elems");
+        numElems.setInputType(InputType.TYPE_CLASS_NUMBER);
+
         btnShow.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -46,7 +50,8 @@ public class MainActivity extends AppCompatActivity {
                 File dir = getFilesDir();
                 String dir_path = dir.getAbsolutePath();
                 String iters_val = iters.getText().toString();
-                String r = g.runMSM(dir_path, iters_val);
+                String numElemsVal = numElems.getText().toString();
+                String r = g.runMSM(dir_path, iters_val, numElemsVal);
                 Toast.makeText(MainActivity.this, dir_path, Toast.LENGTH_LONG).show();
             }
         });
@@ -57,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
         if (linearLayout != null) {
             linearLayout.addView(btnShow);
             linearLayout.addView(iters);
+            linearLayout.addView(numElems);
         }
 
     }
