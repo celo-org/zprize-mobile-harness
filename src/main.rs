@@ -5,9 +5,12 @@ fn main() {
     let mut rng = thread_rng();
     println!("Generating elements");
     let dir = ".";
-    let (points, scalars) = gen_random_vectors(8, &mut rng);
-    serialize_input(".", &points, &scalars);
-    let (points, scalars) = deserialize_input(&dir); //gen_random_vectors(8, &mut rng);
+    let base: i32 = 2;
+    let n_elems = base.pow(16);
+    let (points, scalars) = gen_random_vectors(n_elems.try_into().unwrap(), &mut rng);
+    //serialize_input(".", &points, &scalars);
+    //let (points, scalars) = deserialize_input(&dir); //gen_random_vectors(8, &mut rng);
     println!("Generated elements");
-    benchmark_msm(&dir, &points[..], &scalars[..], 10);
+    let result = benchmark_msm(&dir, &points[..], &scalars[..], 10);
+    println!("result is: {:?}", result);
 }

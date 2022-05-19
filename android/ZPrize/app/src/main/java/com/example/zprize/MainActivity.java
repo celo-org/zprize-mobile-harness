@@ -40,8 +40,11 @@ public class MainActivity extends AppCompatActivity {
         iters.setInputType(InputType.TYPE_CLASS_NUMBER);
 
         EditText numElems = new EditText(this);
-        numElems.setHint("#elems");
+        numElems.setHint("#elems as power of 2");
         numElems.setInputType(InputType.TYPE_CLASS_NUMBER);
+
+        TextView resultView = new TextView(this);
+       // resultView.setText("This is the result");
 
         btnShow.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -52,7 +55,8 @@ public class MainActivity extends AppCompatActivity {
                 String iters_val = iters.getText().toString();
                 String numElemsVal = numElems.getText().toString();
                 String r = g.runMSM(dir_path, iters_val, numElemsVal);
-                Toast.makeText(MainActivity.this, r, Toast.LENGTH_LONG).show();
+                resultView.setText(r);
+                //Toast.makeText(MainActivity.this, r, Toast.LENGTH_LONG).show();
             }
         });
 
@@ -63,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
             linearLayout.addView(btnShow);
             linearLayout.addView(iters);
             linearLayout.addView(numElems);
+            linearLayout.addView(resultView);
         }
 
     }
