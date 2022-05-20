@@ -47,9 +47,7 @@ public class MainActivity extends AppCompatActivity {
         EditText numElems = new EditText(this);
         numElems.setHint("#elems as power of 2");
         numElems.setInputType(InputType.TYPE_CLASS_NUMBER);
-
-        //assets = getAssets();
-
+        
         TextView resultView = new TextView(this);
        // resultView.setText("This is the result");
 

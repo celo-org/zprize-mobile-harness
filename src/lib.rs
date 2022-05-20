@@ -108,7 +108,6 @@ pub mod android {
        use rand::thread_rng;
 
        #[no_mangle]
-       //Java_com_example_greetings_RustGreetings_greeting
        pub unsafe extern fn Java_com_example_zprize_RustMSM_benchmarkMSMRandom(env: JNIEnv, _: JClass, java_dir: JString, java_iters: JString, java_num_elems: JString) -> jstring {
         let mut rng = thread_rng();
         let base: i32 = 2;
@@ -126,8 +125,31 @@ pub mod android {
         let rust_iters = CStr::from_ptr(iters).to_str().expect("string invalid");
         let iters_val: u32 = rust_iters.parse().unwrap();
 
-        //serialize_input(&rust_dir, &points, &scalars);
-        //let (points, scalars) = deserialize_input(&rust_dir);
+        let mean_time = benchmark_msm(&rust_dir, &points[..], &scalars[..], iters_val);
+
+        let output = env.new_string(mean_time).unwrap();
+
+        output.into_inner()
+      }
+
+       #[no_mangle]
+       pub unsafe extern fn Java_com_example_zprize_RustMSM_benchmarkMSMFile(env: JNIEnv, _: JClass, java_dir: JString, java_iters: JString, java_num_elems: JString) -> jstring {
+        let mut rng = thread_rng();
+        let base: i32 = 2;
+
+        let num_elems = env.get_string(java_num_elems).expect("invalid string").as_ptr();
+        let rust_num_elems = CStr::from_ptr(num_elems).to_str().expect("string invalid");
+        let num_elems_val: u32 = rust_num_elems.parse().unwrap();
+        let num_elems_exp = base.pow(num_elems_val);
+
+        let dir = env.get_string(java_dir).expect("invalid string").as_ptr();
+        let rust_dir = CStr::from_ptr(dir).to_str().expect("string invalid");
+
+        let iters = env.get_string(java_iters).expect("invalid string").as_ptr();
+        let rust_iters = CStr::from_ptr(iters).to_str().expect("string invalid");
+        let iters_val: u32 = rust_iters.parse().unwrap();
+
+        let (points, scalars) = deserialize_input(&rust_dir);
         let mean_time = benchmark_msm(&rust_dir, &points[..], &scalars[..], iters_val);
 
         let output = env.new_string(mean_time).unwrap();
