@@ -49,13 +49,15 @@ public class MainActivity extends AppCompatActivity {
         btnShow.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                resultView.setText("Mean time to run is: ");
                 RustMSM g = new RustMSM();
                 File dir = getFilesDir();
                 String dir_path = dir.getAbsolutePath();
                 String iters_val = iters.getText().toString();
                 String numElemsVal = numElems.getText().toString();
                 String r = g.runMSM(dir_path, iters_val, numElemsVal);
-                resultView.setText(r);
+                String result = "Mean time to run is: " + r;
+                resultView.setText(result);
                 //Toast.makeText(MainActivity.this, r, Toast.LENGTH_LONG).show();
             }
         });
