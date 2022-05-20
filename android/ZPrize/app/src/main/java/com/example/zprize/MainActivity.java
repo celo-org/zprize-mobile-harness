@@ -3,6 +3,8 @@ package com.example.zprize;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.File;
+import java.io.InputStream;
+import java.io.FileOutputStream;
 import android.os.Bundle;
 import android.text.InputType;
 import android.widget.EditText;
@@ -60,26 +62,51 @@ public class MainActivity extends AppCompatActivity {
                 String dir_path = dir.getAbsolutePath();
                 String iters_val = iters.getText().toString();
                 String numElemsVal = numElems.getText().toString();
-                String r = g.runMSM(dir_path, iters_val, numElemsVal);
+                String r = g.runMSMRandom(dir_path, iters_val, numElemsVal);
                 String result = "Mean time to run with random elements is: " + r;
                 resultView.setText(result);
-                //Toast.makeText(MainActivity.this, r, Toast.LENGTH_LONG).show();
             }
         });
 
         btnShowFile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                File filePoints = new File(getFilesDir()+"/points");
+                if (!filePoints.exists()) try {
+
+                    InputStream is = getAssets().open("points");
+                    int size = is.available();
+                    byte[] buffer = new byte[size];
+                    is.read(buffer);
+                    is.close();
+
+                    FileOutputStream fos = new FileOutputStream(filePoints);
+                    fos.write(buffer);
+                    fos.close();
+                } catch (Exception e) { throw new RuntimeException(e); }
+                File fileScalars = new File(getFilesDir()+"/scalars");
+                if (!fileScalars.exists()) try {
+
+                    InputStream is = getAssets().open("scalars");
+                    int size = is.available();
+                    byte[] buffer = new byte[size];
+                    is.read(buffer);
+                    is.close();
+
+                    FileOutputStream fos = new FileOutputStream(fileScalars);
+                    fos.write(buffer);
+                    fos.close();
+                } catch (Exception e) { throw new RuntimeException(e); }
+
                 resultView.setText("Mean time to run with test vectors is: ");
                 RustMSM g = new RustMSM();
                 File dir = getFilesDir();
                 String dir_path = dir.getAbsolutePath();
                 String iters_val = iters.getText().toString();
                 String numElemsVal = numElems.getText().toString();
-                String r = g.runMSM(dir_path, iters_val, numElemsVal);
+                String r = g.runMSMRandom(dir_path, iters_val, numElemsVal);
                 String result = "Mean time to run with test vectors is: " + r;
                 resultView.setText(result);
-                //Toast.makeText(MainActivity.this, r, Toast.LENGTH_LONG).show();
             }
         });
 

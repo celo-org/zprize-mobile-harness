@@ -109,7 +109,7 @@ pub mod android {
 
        #[no_mangle]
        //Java_com_example_greetings_RustGreetings_greeting
-       pub unsafe extern fn Java_com_example_zprize_RustMSM_benchmarkMSM(env: JNIEnv, _: JClass, java_dir: JString, java_iters: JString, java_num_elems: JString) -> jstring {
+       pub unsafe extern fn Java_com_example_zprize_RustMSM_benchmarkMSMRandom(env: JNIEnv, _: JClass, java_dir: JString, java_iters: JString, java_num_elems: JString) -> jstring {
         let mut rng = thread_rng();
         let base: i32 = 2;
 
@@ -127,7 +127,7 @@ pub mod android {
         let iters_val: u32 = rust_iters.parse().unwrap();
 
         //serialize_input(&rust_dir, &points, &scalars);
-        //let (de_points, de_scalars) = deserialize_input(&rust_dir);
+        //let (points, scalars) = deserialize_input(&rust_dir);
         let mean_time = benchmark_msm(&rust_dir, &points[..], &scalars[..], iters_val);
 
         let output = env.new_string(mean_time).unwrap();
