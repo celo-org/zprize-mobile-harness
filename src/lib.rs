@@ -126,12 +126,11 @@ pub mod android {
         let rust_iters = CStr::from_ptr(iters).to_str().expect("string invalid");
         let iters_val: u32 = rust_iters.parse().unwrap();
 
-        serialize_input(&rust_dir, &points, &scalars);
-        let (de_points, de_scalars) = deserialize_input(&rust_dir);
+        //serialize_input(&rust_dir, &points, &scalars);
+        //let (de_points, de_scalars) = deserialize_input(&rust_dir);
         let mean_time = benchmark_msm(&rust_dir, &points[..], &scalars[..], iters_val);
 
-        // output to check that code ran
-        let output = env.new_string(mean_time).unwrap();//env.new_string(world_ptr.to_str().unwrap()).expect("Couldn't create java string!");
+        let output = env.new_string(mean_time).unwrap();
 
         output.into_inner()
       }
