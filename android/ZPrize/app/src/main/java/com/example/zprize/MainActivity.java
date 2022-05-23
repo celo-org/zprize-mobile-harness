@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
         EditText numElems = new EditText(this);
         numElems.setHint("#elems as power of 2");
         numElems.setInputType(InputType.TYPE_CLASS_NUMBER);
-        
+
         TextView resultView = new TextView(this);
        // resultView.setText("This is the result");
 
@@ -101,8 +101,7 @@ public class MainActivity extends AppCompatActivity {
                 File dir = getFilesDir();
                 String dir_path = dir.getAbsolutePath();
                 String iters_val = iters.getText().toString();
-                String numElemsVal = numElems.getText().toString();
-                String r = g.runMSMRandom(dir_path, iters_val, numElemsVal);
+                String r = g.runMSMFile(dir_path, iters_val);
                 String result = "Mean time to run with test vectors is: " + r;
                 resultView.setText(result);
             }
