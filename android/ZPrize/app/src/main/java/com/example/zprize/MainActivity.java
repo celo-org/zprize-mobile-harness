@@ -70,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 File filePoints = new File(getFilesDir()+"/points");
-                if (!filePoints.exists()) try {
+                try {
 
                     InputStream is = getAssets().open("points");
                     int size = is.available();
@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
                     fos.close();
                 } catch (Exception e) { throw new RuntimeException(e); }
                 File fileScalars = new File(getFilesDir()+"/scalars");
-                if (!fileScalars.exists()) try {
+                try {
 
                     InputStream is = getAssets().open("scalars");
                     int size = is.available();
