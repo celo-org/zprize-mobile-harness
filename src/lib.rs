@@ -1,16 +1,11 @@
 use ark_bls12_377 as bls377;
 
-
-
-
 use ark_ff::fields::Field;
 use ark_ff::PrimeField;
 use ark_serialize::CanonicalDeserialize;
 use ark_serialize::CanonicalSerialize;
 use ark_serialize::Write;
-use ark_std::rand::{
-    Rng,
-};
+use ark_std::rand::Rng;
 use ark_std::Zero;
 use duration_string::DurationString;
 
@@ -56,8 +51,8 @@ pub fn serialize_input(
     let scalars_path = format!("{}{}", dir, "/scalars");
     let f1 = File::create(points_path).unwrap();
     let f2 = File::create(scalars_path).unwrap();
-    points.serialize(&f1);
-    scalars.serialize(&f2);
+    points.serialize(&f1).unwrap();
+    scalars.serialize(&f2).unwrap();
 }
 
 pub fn deserialize_input(
@@ -84,18 +79,18 @@ pub fn benchmark_msm(
     let output_path = format!("{}{}", output_dir, "/resulttimes.txt");
     let output_result_path = format!("{}{}", output_dir, "/result.txt");
     let mut output_file = File::create(output_path).expect("output file creation failed");
-    let mut output_result_file = File::create(output_result_path).expect("output file creation failed");
+    let output_result_file = File::create(output_result_path).expect("output file creation failed");
     let mut total_duration = Duration::ZERO;
     for i in 0..iterations {
         let start = Instant::now();
         let result = ark_ec::msm::VariableBaseMSM::multi_scalar_mul(points, scalars);
         let time = start.elapsed();
-        writeln!(output_file, "iteration {}: {:?}", i + 1, time);
-        result.serialize(&output_result_file);
+        writeln!(output_file, "iteration {}: {:?}", i + 1, time).unwrap();
+        result.serialize(&output_result_file).unwrap();
         total_duration += time;
     }
     let mean = total_duration / iterations;
-    write!(output_file, "Mean across all iterations: {:?}", mean);
+    write!(output_file, "Mean across all iterations: {:?}", mean).unwrap();
     println!(
         "Average time to execute MSM with {} points and {} scalars and {} iterations is: {:?}",
         points.len(),
