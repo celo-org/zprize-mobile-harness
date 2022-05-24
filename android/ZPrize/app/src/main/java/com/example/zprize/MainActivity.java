@@ -21,16 +21,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
-
-       /* super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        ((TextView)findViewById(R.id.greetingField)).setText("hello charlie");*/
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         LinearLayout linearLayout = findViewById(R.id.rootContainer);
-
 
         Button btnShow = new Button(this);
         btnShow.setText("Press to run using random elements");
@@ -49,7 +43,6 @@ public class MainActivity extends AppCompatActivity {
         numElems.setInputType(InputType.TYPE_CLASS_NUMBER);
 
         TextView resultView = new TextView(this);
-       // resultView.setText("This is the result");
 
         btnShow.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -106,8 +99,6 @@ public class MainActivity extends AppCompatActivity {
                 resultView.setText(result);
             }
         });
-
-
 
         // Add Button to LinearLayout
         if (linearLayout != null) {

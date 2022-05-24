@@ -1,29 +1,32 @@
-use ark_ec::short_weierstrass_jacobian::GroupProjective;
-use duration_string::DurationString;
-use ark_serialize::Write;
-use ark_serialize::CanonicalDeserialize;
-use std::fs::File;
-use std::time::Duration;
-use ark_ff::PrimeField;
-use std::time::Instant;
-use ark_ec::msm;
-use ark_ec::models::SWModelParameters as Parameters;
 use ark_bls12_377 as bls377;
 use ark_bls12_377::{G1Affine, G1Projective};
+use ark_ec::models::SWModelParameters as Parameters;
+use ark_ec::msm;
+use ark_ec::short_weierstrass_jacobian::GroupProjective;
 use ark_ff::fields::Field;
-use ark_std::Zero;
+use ark_ff::PrimeField;
+use ark_serialize::CanonicalDeserialize;
 use ark_serialize::CanonicalSerialize;
-use rand::RngCore;
-use rand::thread_rng;
+use ark_serialize::Write;
 use ark_std::rand::{
     distributions::{Distribution, Standard},
     Rng,
 };
+use ark_std::Zero;
+use duration_string::DurationString;
+use rand::thread_rng;
+use rand::RngCore;
+use std::fs::File;
+use std::time::Duration;
+use std::time::Instant;
 
 pub fn gen_random_vectors<R: RngCore>(
     n: usize,
     rng: &mut R,
-) -> (Vec<bls377::G1Affine>, Vec<<bls377::Fr as PrimeField>::BigInt>) {
+) -> (
+    Vec<bls377::G1Affine>,
+    Vec<<bls377::Fr as PrimeField>::BigInt>,
+) {
     let num_bytes = bls377::Fr::zero().serialized_size();
     let mut points = Vec::<bls377::G1Affine>::new();
     let mut scalars = Vec::<<bls377::Fr as PrimeField>::BigInt>::new();
@@ -60,7 +63,10 @@ pub fn serialize_input(
 
 pub fn deserialize_input(
     dir: &str,
-) -> (Vec<bls377::G1Affine>, Vec<<bls377::Fr as PrimeField>::BigInt>) {
+) -> (
+    Vec<bls377::G1Affine>,
+    Vec<<bls377::Fr as PrimeField>::BigInt>,
+) {
     let points_path = format!("{}{}", dir, "/points");
     let scalars_path = format!("{}{}", dir, "/scalars");
     let f1 = File::open(points_path).unwrap();
@@ -83,36 +89,50 @@ pub fn benchmark_msm(
         let start = Instant::now();
         let result = ark_ec::msm::VariableBaseMSM::multi_scalar_mul(&points[..], &scalars[..]);
         let time = start.elapsed();
-        write!(output_file, "iteration {}: {:?}\n", i+1, time);
+        write!(output_file, "iteration {}: {:?}\n", i + 1, time);
         total_duration += time;
     }
     let mean = total_duration / iterations;
     write!(output_file, "Mean across all iterations: {:?}", mean);
-    println!("Average time to execute MSM with {} points and {} scalars and {} iterations is: {:?}", points.len(), scalars.len(), iterations, mean);
+    println!(
+        "Average time to execute MSM with {} points and {} scalars and {} iterations is: {:?}",
+        points.len(),
+        scalars.len(),
+        iterations,
+        mean
+    );
     let d: String = DurationString::from(mean).into();
     d
 }
 
-
 /// Expose the JNI interface for android below
-#[cfg(target_os="android")]
+#[cfg(target_os = "android")]
 #[allow(non_snake_case)]
 pub mod android {
-       extern crate jni;
-       use std::os::raw::{c_char};
-       use std::ffi::{CString, CStr};
-       use super::*;
-       use self::jni::JNIEnv;
-       use self::jni::objects::{JClass, JString};
-       use self::jni::sys::{jstring};
-       use rand::thread_rng;
+    extern crate jni;
+    use self::jni::objects::{JClass, JString};
+    use self::jni::sys::jstring;
+    use self::jni::JNIEnv;
+    use super::*;
+    use rand::thread_rng;
+    use std::ffi::{CStr, CString};
+    use std::os::raw::c_char;
 
-       #[no_mangle]
-       pub unsafe extern fn Java_com_example_zprize_RustMSM_benchmarkMSMRandom(env: JNIEnv, _: JClass, java_dir: JString, java_iters: JString, java_num_elems: JString) -> jstring {
+    #[no_mangle]
+    pub unsafe extern "C" fn Java_com_example_zprize_RustMSM_benchmarkMSMRandom(
+        env: JNIEnv,
+        _: JClass,
+        java_dir: JString,
+        java_iters: JString,
+        java_num_elems: JString,
+    ) -> jstring {
         let mut rng = thread_rng();
         let base: i32 = 2;
 
-        let num_elems = env.get_string(java_num_elems).expect("invalid string").as_ptr();
+        let num_elems = env
+            .get_string(java_num_elems)
+            .expect("invalid string")
+            .as_ptr();
         let rust_num_elems = CStr::from_ptr(num_elems).to_str().expect("string invalid");
         let num_elems_val: u32 = rust_num_elems.parse().unwrap();
         let num_elems_exp = base.pow(num_elems_val);
@@ -130,10 +150,15 @@ pub mod android {
         let output = env.new_string(mean_time).unwrap();
 
         output.into_inner()
-      }
+    }
 
-       #[no_mangle]
-       pub unsafe extern fn Java_com_example_zprize_RustMSM_benchmarkMSMFile(env: JNIEnv, _: JClass, java_dir: JString, java_iters: JString) -> jstring {
+    #[no_mangle]
+    pub unsafe extern "C" fn Java_com_example_zprize_RustMSM_benchmarkMSMFile(
+        env: JNIEnv,
+        _: JClass,
+        java_dir: JString,
+        java_iters: JString,
+    ) -> jstring {
         let mut rng = thread_rng();
         let base: i32 = 2;
 
@@ -150,5 +175,5 @@ pub mod android {
         let output = env.new_string(mean_time).unwrap();
 
         output.into_inner()
-      }
+    }
 }
