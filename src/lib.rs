@@ -1,20 +1,19 @@
 use ark_bls12_377 as bls377;
-use ark_bls12_377::{G1Affine, G1Projective};
-use ark_ec::models::SWModelParameters as Parameters;
-use ark_ec::msm;
-use ark_ec::short_weierstrass_jacobian::GroupProjective;
+
+
+
+
 use ark_ff::fields::Field;
 use ark_ff::PrimeField;
 use ark_serialize::CanonicalDeserialize;
 use ark_serialize::CanonicalSerialize;
 use ark_serialize::Write;
 use ark_std::rand::{
-    distributions::{Distribution, Standard},
     Rng,
 };
 use ark_std::Zero;
 use duration_string::DurationString;
-use rand::thread_rng;
+
 use rand::RngCore;
 use std::fs::File;
 use std::time::Duration;
@@ -32,7 +31,7 @@ pub fn gen_random_vectors<R: RngCore>(
     let mut scalars = Vec::<<bls377::Fr as PrimeField>::BigInt>::new();
     let mut bytes = vec![0; num_bytes];
     let mut scalar;
-    for i in 0..n {
+    for _i in 0..n {
         loop {
             rng.fill_bytes(&mut bytes[..]);
             scalar = bls377::Fr::from_random_bytes(&bytes);
@@ -42,7 +41,7 @@ pub fn gen_random_vectors<R: RngCore>(
         }
         scalars.push(scalar.unwrap().into_repr());
 
-        let mut point: bls377::G1Projective = rng.gen();
+        let point: bls377::G1Projective = rng.gen();
         points.push(point.into());
     }
     (points, scalars)
@@ -52,7 +51,7 @@ pub fn serialize_input(
     dir: &str,
     points: &[bls377::G1Affine],
     scalars: &[<bls377::Fr as PrimeField>::BigInt],
-) -> () {
+) {
     let points_path = format!("{}{}", dir, "/points");
     let scalars_path = format!("{}{}", dir, "/scalars");
     let f1 = File::create(points_path).unwrap();
@@ -87,9 +86,9 @@ pub fn benchmark_msm(
     let mut total_duration = Duration::ZERO;
     for i in 0..iterations {
         let start = Instant::now();
-        let result = ark_ec::msm::VariableBaseMSM::multi_scalar_mul(&points[..], &scalars[..]);
+        let _result = ark_ec::msm::VariableBaseMSM::multi_scalar_mul(points, scalars);
         let time = start.elapsed();
-        write!(output_file, "iteration {}: {:?}\n", i + 1, time);
+        writeln!(output_file, "iteration {}: {:?}", i + 1, time);
         total_duration += time;
     }
     let mean = total_duration / iterations;
