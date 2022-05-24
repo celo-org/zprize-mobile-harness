@@ -81,14 +81,17 @@ pub fn benchmark_msm(
     scalars: &[<bls377::Fr as PrimeField>::BigInt],
     iterations: u32,
 ) -> String {
-    let output_path = format!("{}{}", output_dir, "/results.txt");
+    let output_path = format!("{}{}", output_dir, "/resulttimes.txt");
+    let output_result_path = format!("{}{}", output_dir, "/result.txt");
     let mut output_file = File::create(output_path).expect("output file creation failed");
+    let mut output_result_file = File::create(output_result_path).expect("output file creation failed");
     let mut total_duration = Duration::ZERO;
     for i in 0..iterations {
         let start = Instant::now();
-        let _result = ark_ec::msm::VariableBaseMSM::multi_scalar_mul(points, scalars);
+        let result = ark_ec::msm::VariableBaseMSM::multi_scalar_mul(points, scalars);
         let time = start.elapsed();
         writeln!(output_file, "iteration {}: {:?}", i + 1, time);
+        result.serialize(&output_result_file);
         total_duration += time;
     }
     let mean = total_duration / iterations;
