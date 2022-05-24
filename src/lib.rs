@@ -13,6 +13,17 @@ use rand::RngCore;
 use std::fs::File;
 use std::time::Duration;
 use std::time::Instant;
+use thiserror::Error;
+
+
+#[derive(Debug, Error)]
+pub enum HarnessError {
+    #[error("could not serialize")]
+    SerializationError(#[from] ark_serialize::SerializationError),
+
+    #[error("coudl not open file")]
+    FileOpenError(#[from] std::io::Error),
+}
 
 pub fn gen_random_vectors<R: RngCore>(
     n: usize,
@@ -46,28 +57,29 @@ pub fn serialize_input(
     dir: &str,
     points: &[bls377::G1Affine],
     scalars: &[<bls377::Fr as PrimeField>::BigInt],
-) {
+) -> Result<(), HarnessError> {
     let points_path = format!("{}{}", dir, "/points");
     let scalars_path = format!("{}{}", dir, "/scalars");
-    let f1 = File::create(points_path).unwrap();
-    let f2 = File::create(scalars_path).unwrap();
-    points.serialize(&f1).unwrap();
-    scalars.serialize(&f2).unwrap();
+    let f1 = File::create(points_path)?;
+    let f2 = File::create(scalars_path)?;
+    points.serialize(&f1)?;
+    scalars.serialize(&f2)?;
+    Ok(())
 }
 
 pub fn deserialize_input(
     dir: &str,
-) -> (
+) -> Result<(
     Vec<bls377::G1Affine>,
     Vec<<bls377::Fr as PrimeField>::BigInt>,
-) {
+), HarnessError> { 
     let points_path = format!("{}{}", dir, "/points");
     let scalars_path = format!("{}{}", dir, "/scalars");
-    let f1 = File::open(points_path).unwrap();
-    let f2 = File::open(scalars_path).unwrap();
-    let points = Vec::<bls377::G1Affine>::deserialize(&f1).unwrap();
-    let scalars = Vec::<<bls377::Fr as PrimeField>::BigInt>::deserialize(&f2).unwrap();
-    (points, scalars)
+    let f1 = File::open(points_path)?;
+    let f2 = File::open(scalars_path)?;
+    let points = Vec::<bls377::G1Affine>::deserialize(&f1)?;
+    let scalars = Vec::<<bls377::Fr as PrimeField>::BigInt>::deserialize(&f2)?;
+    Ok((points, scalars))
 }
 
 pub fn benchmark_msm(
@@ -75,7 +87,7 @@ pub fn benchmark_msm(
     points: &[bls377::G1Affine],
     scalars: &[<bls377::Fr as PrimeField>::BigInt],
     iterations: u32,
-) -> String {
+) -> Result<String, HarnessError> {
     let output_path = format!("{}{}", output_dir, "/resulttimes.txt");
     let output_result_path = format!("{}{}", output_dir, "/result.txt");
     let mut output_file = File::create(output_path).expect("output file creation failed");
@@ -85,12 +97,12 @@ pub fn benchmark_msm(
         let start = Instant::now();
         let result = ark_ec::msm::VariableBaseMSM::multi_scalar_mul(points, scalars);
         let time = start.elapsed();
-        writeln!(output_file, "iteration {}: {:?}", i + 1, time).unwrap();
-        result.serialize(&output_result_file).unwrap();
+        writeln!(output_file, "iteration {}: {:?}", i + 1, time)?;
+        result.serialize(&output_result_file)?;
         total_duration += time;
     }
     let mean = total_duration / iterations;
-    write!(output_file, "Mean across all iterations: {:?}", mean).unwrap();
+    write!(output_file, "Mean across all iterations: {:?}", mean)?;
     println!(
         "Average time to execute MSM with {} points and {} scalars and {} iterations is: {:?}",
         points.len(),
@@ -99,7 +111,7 @@ pub fn benchmark_msm(
         mean
     );
     let d: String = DurationString::from(mean).into();
-    d
+    Ok(d)
 }
 
 /// Expose the JNI interface for android below
