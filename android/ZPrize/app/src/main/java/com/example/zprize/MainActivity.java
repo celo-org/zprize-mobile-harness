@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.FileOutputStream;
 import android.os.Bundle;
 import android.text.InputType;
+import android.text.TextUtils;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.os.Bundle;
@@ -17,7 +18,6 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
-,,
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -53,9 +53,12 @@ public class MainActivity extends AppCompatActivity {
                 String dir_path = dir.getAbsolutePath();
                 String iters_val = iters.getText().toString();
                 String numElemsVal = numElems.getText().toString();
-                String r = g.runMSMRandom(dir_path, iters_val, numElemsVal);
-                String result = "Mean time to run with random elements is: " + r;
-                resultView.setText(result);
+                if (TextUtils.isDigitsOnly(iters_val) && !TextUtils.isEmpty(iters_val)
+                && TextUtils.isDigitsOnly(numElemsVal) && !TextUtils.isEmpty(numElemsVal)) {
+                    String r = g.runMSMRandom(dir_path, iters_val, numElemsVal);
+                    String result = "Mean time to run with random elements is: " + r;
+                    resultView.setText(result);
+                }
             }
         });
 
@@ -94,9 +97,11 @@ public class MainActivity extends AppCompatActivity {
                 File dir = getFilesDir();
                 String dir_path = dir.getAbsolutePath();
                 String iters_val = iters.getText().toString();
-                String r = g.runMSMFile(dir_path, iters_val);
-                String result = "Mean time to run with test vectors is: " + r;
-                resultView.setText(result);
+                if (TextUtils.isDigitsOnly(iters_val) && !TextUtils.isEmpty(iters_val)) {
+                    String r = g.runMSMFile(dir_path, iters_val);
+                    String result = "Mean time to run with test vectors is: " + r;
+                    resultView.setText(result);
+                }
             }
         });
 
