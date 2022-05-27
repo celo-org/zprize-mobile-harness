@@ -53,6 +53,7 @@ pub fn gen_random_vectors<R: RngCore>(
     (points, scalars)
 }
 
+// TODO (michael): Append to files as option, 1 vector per line
 pub fn serialize_input(
     dir: &str,
     points: &[bls377::G1Affine],
@@ -67,6 +68,7 @@ pub fn serialize_input(
     Ok(())
 }
 
+// TODO(michael): Read in list of vectors, one vector per line of each file
 pub fn deserialize_input(
     dir: &str,
 ) -> Result<(
@@ -82,6 +84,7 @@ pub fn deserialize_input(
     Ok((points, scalars))
 }
 
+// TODO: Take in list of vectors of inputs, run entire function per line per list
 pub fn benchmark_msm(
     output_dir: &str,
     points: &[bls377::G1Affine],

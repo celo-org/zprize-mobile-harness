@@ -44,20 +44,53 @@ public class MainActivity extends AppCompatActivity {
 
         TextView resultView = new TextView(this);
 
+        File filePoints = new File(getFilesDir()+"/points");
+        try {
+
+            InputStream is = getAssets().open("points");
+            int size = is.available();
+            byte[] buffer = new byte[size];
+            is.read(buffer);
+            is.close();
+
+            FileOutputStream fos = new FileOutputStream(filePoints);
+            fos.write(buffer);
+            fos.close();
+        } catch (Exception e) { throw new RuntimeException(e); }
+        File fileScalars = new File(getFilesDir()+"/scalars");
+        try {
+
+            InputStream is = getAssets().open("scalars");
+            int size = is.available();
+            byte[] buffer = new byte[size];
+            is.read(buffer);
+            is.close();
+
+            FileOutputStream fos = new FileOutputStream(fileScalars);
+            fos.write(buffer);
+            fos.close();
+        } catch (Exception e) { throw new RuntimeException(e); }
+
         btnShow.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                resultView.setText("Mean time to run with random elements is: ");
+                resultView.setText("Running on random test vectors");
                 RustMSM g = new RustMSM();
                 File dir = getFilesDir();
                 String dir_path = dir.getAbsolutePath();
                 String iters_val = iters.getText().toString();
                 String numElemsVal = numElems.getText().toString();
+                //resultView.setText("Currently running with random elements for " + iters_val + " iterations and 2^" + numElemsVal + "elements");
                 if (TextUtils.isDigitsOnly(iters_val) && !TextUtils.isEmpty(iters_val)
                 && TextUtils.isDigitsOnly(numElemsVal) && !TextUtils.isEmpty(numElemsVal)) {
-                    String r = g.runMSMRandom(dir_path, iters_val, numElemsVal);
-                    String result = "Mean time to run with random elements is: " + r;
-                    resultView.setText(result);
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            String r = g.runMSMRandom(dir_path, iters_val, numElemsVal);
+                            String result = "Mean time to run with random elements is: " + r;
+                            resultView.setText(result);
+                        }
+                    }).start();
                 }
             }
         });
@@ -65,42 +98,20 @@ public class MainActivity extends AppCompatActivity {
         btnShowFile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                File filePoints = new File(getFilesDir()+"/points");
-                try {
-
-                    InputStream is = getAssets().open("points");
-                    int size = is.available();
-                    byte[] buffer = new byte[size];
-                    is.read(buffer);
-                    is.close();
-
-                    FileOutputStream fos = new FileOutputStream(filePoints);
-                    fos.write(buffer);
-                    fos.close();
-                } catch (Exception e) { throw new RuntimeException(e); }
-                File fileScalars = new File(getFilesDir()+"/scalars");
-                try {
-
-                    InputStream is = getAssets().open("scalars");
-                    int size = is.available();
-                    byte[] buffer = new byte[size];
-                    is.read(buffer);
-                    is.close();
-
-                    FileOutputStream fos = new FileOutputStream(fileScalars);
-                    fos.write(buffer);
-                    fos.close();
-                } catch (Exception e) { throw new RuntimeException(e); }
-
-                resultView.setText("Mean time to run with test vectors is: ");
+                resultView.setText("Currently running test vectors");
                 RustMSM g = new RustMSM();
                 File dir = getFilesDir();
                 String dir_path = dir.getAbsolutePath();
                 String iters_val = iters.getText().toString();
                 if (TextUtils.isDigitsOnly(iters_val) && !TextUtils.isEmpty(iters_val)) {
-                    String r = g.runMSMFile(dir_path, iters_val);
-                    String result = "Mean time to run with test vectors is: " + r;
-                    resultView.setText(result);
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            String r = g.runMSMFile(dir_path, iters_val);
+                            String result = "Mean time to run with test vectors is: " + r;
+                            resultView.setText(result);
+                        }
+                    }).start();
                 }
             }
         });
