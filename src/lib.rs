@@ -9,6 +9,7 @@ use ark_std::rand::Rng;
 use ark_std::Zero;
 use duration_string::DurationString;
 
+use std::cmp;
 use rand::RngCore;
 use std::fs::File;
 use std::time::Duration;
@@ -53,68 +54,105 @@ pub fn gen_random_vectors<R: RngCore>(
     (points, scalars)
 }
 
-// TODO (michael): Append to files as option, 1 vector per line
 pub fn serialize_input(
     dir: &str,
     points: &[bls377::G1Affine],
     scalars: &[<bls377::Fr as PrimeField>::BigInt],
+    append: bool,
 ) -> Result<(), HarnessError> {
     let points_path = format!("{}{}", dir, "/points");
     let scalars_path = format!("{}{}", dir, "/scalars");
-    let f1 = File::create(points_path)?;
-    let f2 = File::create(scalars_path)?;
+    let (f1, f2) = if append {
+        let file1 = File::options().append(true).create(true).open(points_path)?;
+        let file2 = File::options().append(true).create(true).open(scalars_path)?;
+        (file1, file2)                                                                              
+    } else {
+       let file1 = File::create(points_path)?;
+       let file2 = File::create(scalars_path)?;
+       (file1, file2)
+    };
     points.serialize(&f1)?;
     scalars.serialize(&f2)?;
     Ok(())
 }
 
-// TODO(michael): Read in list of vectors, one vector per line of each file
+
+type Point = bls377::G1Affine;
+type Scalar = <bls377::Fr as PrimeField>::BigInt;
+
 pub fn deserialize_input(
     dir: &str,
 ) -> Result<(
-    Vec<bls377::G1Affine>,
-    Vec<<bls377::Fr as PrimeField>::BigInt>,
+    Vec<Vec<Point>>,
+    Vec<Vec<Scalar>>,
 ), HarnessError> { 
+    let mut points_result = Vec::new();
+    let mut scalars_result = Vec::new();
     let points_path = format!("{}{}", dir, "/points");
     let scalars_path = format!("{}{}", dir, "/scalars");
     let f1 = File::open(points_path)?;
     let f2 = File::open(scalars_path)?;
-    let points = Vec::<bls377::G1Affine>::deserialize(&f1)?;
-    let scalars = Vec::<<bls377::Fr as PrimeField>::BigInt>::deserialize(&f2)?;
-    Ok((points, scalars))
+
+    loop {
+        let points = Vec::<bls377::G1Affine>::deserialize(&f1);
+        let scalars = Vec::<<bls377::Fr as PrimeField>::BigInt>::deserialize(&f2);
+
+        let points = match points {
+            Ok(x) => x,
+            _ =>  { break; },
+        };
+
+        let scalars = match scalars {
+            Ok(x) => x,
+            _ => { break; },
+        };
+
+        points_result.push(points);
+        scalars_result.push(scalars);
+    }
+
+    Ok((points_result, scalars_result))
 }
 
-// TODO: Take in list of vectors of inputs, run entire function per line per list
 pub fn benchmark_msm(
     output_dir: &str,
-    points: &[bls377::G1Affine],
-    scalars: &[<bls377::Fr as PrimeField>::BigInt],
+    points_vec: &Vec<Vec<Point>>, //[bls377::G1Affine],
+    scalars_vec: &Vec<Vec<Scalar>>,//[<bls377::Fr as PrimeField>::BigInt],
     iterations: u32,
-) -> Result<String, HarnessError> {
+) -> Result<Vec<String>, HarnessError> {
     let output_path = format!("{}{}", output_dir, "/resulttimes.txt");
     let output_result_path = format!("{}{}", output_dir, "/result.txt");
     let mut output_file = File::create(output_path).expect("output file creation failed");
     let output_result_file = File::create(output_result_path).expect("output file creation failed");
-    let mut total_duration = Duration::ZERO;
-    for i in 0..iterations {
-        let start = Instant::now();
-        let result = ark_ec::msm::VariableBaseMSM::multi_scalar_mul(points, scalars);
-        let time = start.elapsed();
-        writeln!(output_file, "iteration {}: {:?}", i + 1, time)?;
-        result.serialize(&output_result_file)?;
-        total_duration += time;
+    let num_vecs = cmp::min(points_vec.len(), scalars_vec.len());
+    let mut result_vec = Vec::new();
+
+    for idx in 0..num_vecs {
+        let points = &points_vec[idx];
+        let scalars = &scalars_vec[idx];
+
+        let mut total_duration = Duration::ZERO;
+        for i in 0..iterations {
+            let start = Instant::now();
+            let result = ark_ec::msm::VariableBaseMSM::multi_scalar_mul(&points[..], &scalars[..]);
+            let time = start.elapsed();
+            writeln!(output_file, "iteration {}: {:?}", i + 1, time)?;
+            result.serialize(&output_result_file)?;
+            total_duration += time;
+        }
+        let mean = total_duration / iterations;
+        write!(output_file, "Mean across all iterations: {:?}", mean)?;
+        println!(
+            "Average time to execute MSM with {} points and {} scalars and {} iterations is: {:?}",
+            points.len(),
+            scalars.len(),
+            iterations,
+            mean
+        );
+        let d: String = DurationString::from(mean).into();
+        result_vec.push(d);
     }
-    let mean = total_duration / iterations;
-    write!(output_file, "Mean across all iterations: {:?}", mean)?;
-    println!(
-        "Average time to execute MSM with {} points and {} scalars and {} iterations is: {:?}",
-        points.len(),
-        scalars.len(),
-        iterations,
-        mean
-    );
-    let d: String = DurationString::from(mean).into();
-    Ok(d)
+    Ok(result_vec)
 }
 
 /// Expose the JNI interface for android below
