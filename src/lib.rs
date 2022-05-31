@@ -195,9 +195,14 @@ pub mod android {
         let rust_iters = CStr::from_ptr(iters).to_str().expect("string invalid");
         let iters_val: u32 = rust_iters.parse().unwrap();
 
-        let mean_time = benchmark_msm(&rust_dir, &points[..], &scalars[..], iters_val);
+        let mut points_vec = Vec::new();
+        let mut scalars_vec = Vec::new();
+        points_vec.push(points);
+        scalars_vec.push(scalars);
 
-        let output = env.new_string(mean_time).unwrap();
+        let mean_time = benchmark_msm(&rust_dir, &points_vec, &scalars_vec, iters_val).unwrap();
+
+        let output = env.new_string(&mean_time[0]).unwrap();
 
         output.into_inner()
     }
@@ -219,10 +224,10 @@ pub mod android {
         let rust_iters = CStr::from_ptr(iters).to_str().expect("string invalid");
         let iters_val: u32 = rust_iters.parse().unwrap();
 
-        let (points, scalars) = deserialize_input(&rust_dir);
-        let mean_time = benchmark_msm(&rust_dir, &points[..], &scalars[..], iters_val);
+        let (points, scalars) = deserialize_input(&rust_dir).unwrap();
+        let mean_time = benchmark_msm(&rust_dir, &points, &scalars, iters_val).unwrap();
 
-        let output = env.new_string(mean_time).unwrap();
+        let output = env.new_string(&mean_time[0]).unwrap();
 
         output.into_inner()
     }
