@@ -165,8 +165,7 @@ pub mod android {
     use self::jni::JNIEnv;
     use super::*;
     use rand::thread_rng;
-    use std::ffi::{CStr, CString};
-    use std::os::raw::c_char;
+    use std::ffi::CStr;
 
     #[no_mangle]
     pub unsafe extern "C" fn Java_com_example_zprize_RustMSM_benchmarkMSMRandom(
@@ -214,9 +213,6 @@ pub mod android {
         java_dir: JString,
         java_iters: JString,
     ) -> jstring {
-        let mut rng = thread_rng();
-        let base: i32 = 2;
-
         let dir = env.get_string(java_dir).expect("invalid string").as_ptr();
         let rust_dir = CStr::from_ptr(dir).to_str().expect("string invalid");
 
