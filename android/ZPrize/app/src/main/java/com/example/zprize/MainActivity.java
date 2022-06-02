@@ -43,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
         numElems.setInputType(InputType.TYPE_CLASS_NUMBER);
 
         TextView resultView = new TextView(this);
+        TextView resultView2 = new TextView(this);
 
         File filePoints = new File(getFilesDir()+"/points");
         try {
@@ -87,8 +88,9 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void run() {
                             String r = g.runMSMRandom(dir_path, iters_val, numElemsVal);
-                            String result = "Mean time to run with random elements is: " + r;
+                            String result = "Mean time to run with random elements is: ";
                             resultView.setText(result);
+                            resultView2.setText(r);
                         }
                     }).start();
                 }
@@ -104,14 +106,17 @@ public class MainActivity extends AppCompatActivity {
                 String dir_path = dir.getAbsolutePath();
                 String iters_val = iters.getText().toString();
                 if (TextUtils.isDigitsOnly(iters_val) && !TextUtils.isEmpty(iters_val)) {
-                    new Thread(new Runnable() {
+                    Thread t = new Thread(new Runnable() {
                         @Override
                         public void run() {
                             String r = g.runMSMFile(dir_path, iters_val);
-                            String result = "Mean time to run with test vectors is: " + r;
+                            String result = "Mean time to run with test vectors is: ";
                             resultView.setText(result);
+                            resultView2.setText(r);
                         }
-                    }).start();
+                    });
+                    t.start();
+                   // try { t.join(); } catch (InterruptedException e) { e.printStackTrace(); }
                 }
             }
         });
@@ -123,6 +128,7 @@ public class MainActivity extends AppCompatActivity {
             linearLayout.addView(iters);
             linearLayout.addView(numElems);
             linearLayout.addView(resultView);
+            linearLayout.addView(resultView2);
         }
 
     }

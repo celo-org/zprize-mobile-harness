@@ -223,8 +223,18 @@ pub mod android {
         let (points, scalars) = deserialize_input(&rust_dir).unwrap();
         let mean_time = benchmark_msm(&rust_dir, &points, &scalars, iters_val).unwrap();
 
-        let output = env.new_string(&mean_time[0]).unwrap();
+        let mut output_string = "".to_owned();
+        for s in &mean_time {
+            output_string.push_str(&s);
+            output_string.push_str(", ");
+        }
+        let mut output_chars = output_string.chars();
+        output_chars.next_back();
+        output_chars.next_back();
 
-        output.into_inner()
+        let test = env.new_string(&output_chars.as_str()).unwrap();
+        //let output = env.new_string(&mean_time[0]).unwrap();
+
+        test.into_inner()
     }
 }
