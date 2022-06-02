@@ -75,13 +75,12 @@ public class MainActivity extends AppCompatActivity {
         btnShow.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                resultView.setText("Running on random test vectors");
+                resultView.setText("Running on random vectors");
                 RustMSM g = new RustMSM();
                 File dir = getFilesDir();
                 String dir_path = dir.getAbsolutePath();
                 String iters_val = iters.getText().toString();
                 String numElemsVal = numElems.getText().toString();
-                //resultView.setText("Currently running with random elements for " + iters_val + " iterations and 2^" + numElemsVal + "elements");
                 if (TextUtils.isDigitsOnly(iters_val) && !TextUtils.isEmpty(iters_val)
                 && TextUtils.isDigitsOnly(numElemsVal) && !TextUtils.isEmpty(numElemsVal)) {
                     new Thread(new Runnable() {
@@ -116,7 +115,6 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });
                     t.start();
-                   // try { t.join(); } catch (InterruptedException e) { e.printStackTrace(); }
                 }
             }
         });

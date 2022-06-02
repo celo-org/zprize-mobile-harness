@@ -11,3 +11,5 @@ then copy `target/armv7-linux-androideabi/release/libcelo_zprize.so` to `android
 To modify the fixed test vectors, add the new test vector files to  `android/ZPrize/app/src/main/assets/`.
 
 To run `src/main.rs`, run `cargo run --release`. 
+
+On a Galaxy A13, output files were stored to `data/data/com.example.zprize/files/`. The output group elements of the MSM, one per iteration, are stored in `result.txt`. The time per iteration is recorded in `resulttimes.txt`. When running test vectors, the files will contain the results for each vector of inputs in sequence.  

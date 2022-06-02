@@ -1,5 +1,4 @@
 use ark_bls12_377 as bls377;
-
 use ark_ff::fields::Field;
 use ark_ff::PrimeField;
 use ark_serialize::CanonicalDeserialize;
@@ -116,8 +115,8 @@ pub fn deserialize_input(
 
 pub fn benchmark_msm(
     output_dir: &str,
-    points_vec: &Vec<Vec<Point>>, //[bls377::G1Affine],
-    scalars_vec: &Vec<Vec<Scalar>>,//[<bls377::Fr as PrimeField>::BigInt],
+    points_vec: &Vec<Vec<Point>>, 
+    scalars_vec: &Vec<Vec<Scalar>>,
     iterations: u32,
 ) -> Result<Vec<String>, HarnessError> {
     let output_path = format!("{}{}", output_dir, "/resulttimes.txt");
@@ -232,9 +231,8 @@ pub mod android {
         output_chars.next_back();
         output_chars.next_back();
 
-        let test = env.new_string(&output_chars.as_str()).unwrap();
-        //let output = env.new_string(&mean_time[0]).unwrap();
+        let output = env.new_string(&output_chars.as_str()).unwrap();
 
-        test.into_inner()
+        output.into_inner()
     }
 }
