@@ -25,16 +25,19 @@ pub enum HarnessError {
     FileOpenError(#[from] std::io::Error),
 }
 
+type Point = bls377::G1Affine;
+type Scalar = <bls377::Fr as PrimeField>::BigInt;
+
 pub fn gen_random_vectors<R: RngCore>(
     n: usize,
     rng: &mut R,
 ) -> (
-    Vec<bls377::G1Affine>,
-    Vec<<bls377::Fr as PrimeField>::BigInt>,
+    Vec<Point>,
+    Vec<Scalar>,
 ) {
     let num_bytes = bls377::Fr::zero().serialized_size();
-    let mut points = Vec::<bls377::G1Affine>::new();
-    let mut scalars = Vec::<<bls377::Fr as PrimeField>::BigInt>::new();
+    let mut points = Vec::<Point>::new();
+    let mut scalars = Vec::<Scalar>::new();
     let mut bytes = vec![0; num_bytes];
     let mut scalar;
     for _i in 0..n {
@@ -53,10 +56,33 @@ pub fn gen_random_vectors<R: RngCore>(
     (points, scalars)
 }
 
+pub fn gen_zero_vectors<R: RngCore>(
+    n: usize,
+    rng: &mut R,
+) -> (
+    Vec<Point>,
+    Vec<Scalar>,
+) {
+    let num_bytes = bls377::Fr::zero().serialized_size();
+    let mut points = Vec::<Point>::new();
+    let mut scalars = Vec::<Scalar>::new();
+    let mut bytes = vec![0; num_bytes];
+    let mut scalar;
+    for _i in 0..n {
+        rng.fill_bytes(&mut bytes[..]);
+        scalar = bls377::Fr::zero();
+        scalars.push(scalar.into_repr());
+
+        let point: bls377::G1Projective = rng.gen();
+        points.push(point.into());
+    }
+    (points, scalars)
+}
+
 pub fn serialize_input(
     dir: &str,
-    points: &[bls377::G1Affine],
-    scalars: &[<bls377::Fr as PrimeField>::BigInt],
+    points: &[Point],
+    scalars: &[Scalar],
     append: bool,
 ) -> Result<(), HarnessError> {
     let points_path = format!("{}{}", dir, "/points");
@@ -76,8 +102,6 @@ pub fn serialize_input(
 }
 
 
-type Point = bls377::G1Affine;
-type Scalar = <bls377::Fr as PrimeField>::BigInt;
 
 pub fn deserialize_input(
     dir: &str,
@@ -93,8 +117,8 @@ pub fn deserialize_input(
     let f2 = File::open(scalars_path)?;
 
     loop {
-        let points = Vec::<bls377::G1Affine>::deserialize(&f1);
-        let scalars = Vec::<<bls377::Fr as PrimeField>::BigInt>::deserialize(&f2);
+        let points = Vec::<Point>::deserialize(&f1);
+        let scalars = Vec::<Scalar>::deserialize(&f2);
 
         let points = match points {
             Ok(x) => x,
@@ -140,7 +164,7 @@ pub fn benchmark_msm(
             total_duration += time;
         }
         let mean = total_duration / iterations;
-        write!(output_file, "Mean across all iterations: {:?}", mean)?;
+        writeln!(output_file, "Mean across all iterations: {:?}", mean)?;
         println!(
             "Average time to execute MSM with {} points and {} scalars and {} iterations is: {:?}",
             points.len(),
