@@ -21,7 +21,7 @@ pub enum HarnessError {
     #[error("could not serialize")]
     SerializationError(#[from] ark_serialize::SerializationError),
 
-    #[error("coudl not open file")]
+    #[error("could not open file")]
     FileOpenError(#[from] std::io::Error),
 }
 
@@ -142,7 +142,7 @@ pub fn benchmark_msm(
     points_vec: &Vec<Vec<Point>>, 
     scalars_vec: &Vec<Vec<Scalar>>,
     iterations: u32,
-) -> Result<Vec<String>, HarnessError> {
+) -> Result<Vec<Duration>, HarnessError> {
     let output_path = format!("{}{}", output_dir, "/resulttimes.txt");
     let output_result_path = format!("{}{}", output_dir, "/result.txt");
     let mut output_file = File::create(output_path).expect("output file creation failed");
@@ -172,8 +172,7 @@ pub fn benchmark_msm(
             iterations,
             mean
         );
-        let d: String = DurationString::from(mean).into();
-        result_vec.push(d);
+        result_vec.push(mean);
     }
     Ok(result_vec)
 }
@@ -222,9 +221,68 @@ pub mod android {
         points_vec.push(points);
         scalars_vec.push(scalars);
 
-        let mean_time = benchmark_msm(&rust_dir, &points_vec, &scalars_vec, iters_val).unwrap();
+        let mean_time_vec = benchmark_msm(&rust_dir, &points_vec, &scalars_vec, iters_val).unwrap();
+        let mean_str: String = DurationString::from(mean_time_vec[0]).into();
 
-        let output = env.new_string(&mean_time[0]).unwrap();
+        let output = env.new_string(&mean_str).unwrap();
+
+        output.into_inner()
+    }
+
+    #[no_mangle]
+    pub unsafe extern "C" fn Java_com_example_zprize_RustMSM_benchmarkMSMRandomMultipleVecs(
+        env: JNIEnv,
+        _: JClass,
+        java_dir: JString,
+        java_iters: JString,
+        java_num_elems: JString,
+        java_num_vecs: JString,
+    ) -> jstring {
+        let mut rng = thread_rng();
+        let base: i32 = 2;
+
+        let num_elems = env
+            .get_string(java_num_elems)
+            .expect("invalid string")
+            .as_ptr();
+        let rust_num_elems = CStr::from_ptr(num_elems).to_str().expect("string invalid");
+        let num_elems_val: u32 = rust_num_elems.parse().unwrap();
+        let num_elems_exp = base.pow(num_elems_val);
+
+        let num_vecs = env
+            .get_string(java_num_vecs)
+            .expect("invalid string")
+            .as_ptr();
+        let rust_num_vecs = CStr::from_ptr(num_vecs).to_str().expect("string invalid");
+        let num_vecs_val: u32 = rust_num_vecs.parse().unwrap();
+
+        let iters = env.get_string(java_iters).expect("invalid string").as_ptr();
+        let rust_iters = CStr::from_ptr(iters).to_str().expect("string invalid");
+        let iters_val: u32 = rust_iters.parse().unwrap();
+
+        let mut points_vec = Vec::new();
+        let mut scalars_vec = Vec::new();
+        for _i in 0..num_vecs_val {
+            let (points, scalars) = gen_random_vectors(num_elems_exp.try_into().unwrap(), &mut rng);
+            points_vec.push(points);
+            scalars_vec.push(scalars);
+        }
+
+        let dir = env.get_string(java_dir).expect("invalid string").as_ptr();
+        let rust_dir = CStr::from_ptr(dir).to_str().expect("string invalid");
+        let mean_time_vec = benchmark_msm(&rust_dir, &points_vec, &scalars_vec, iters_val).unwrap();
+
+        let mut total = Duration::ZERO;
+        for time in mean_time_vec {
+           total += time; 
+        }
+        let total_mean = total / num_vecs_val;
+
+        let output_path = format!("{}{}", rust_dir, "/resulttimes.txt");
+        let mut output_file = File::options().append(true).open(output_path).unwrap();
+        writeln!(output_file, "Mean across all vectors: {:?}", total_mean).unwrap();
+        let mean_str: String = DurationString::from(total_mean).into();
+        let output = env.new_string(&mean_str).unwrap();
 
         output.into_inner()
     }
@@ -247,7 +305,8 @@ pub mod android {
         let mean_time = benchmark_msm(&rust_dir, &points, &scalars, iters_val).unwrap();
 
         let mut output_string = "".to_owned();
-        for s in &mean_time {
+        for time in mean_time {
+            let s: String = DurationString::from(time).into();
             output_string.push_str(&s);
             output_string.push_str(", ");
         }

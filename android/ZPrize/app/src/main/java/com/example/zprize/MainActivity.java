@@ -35,12 +35,16 @@ public class MainActivity extends AppCompatActivity {
         btnShowFile.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         EditText iters = new EditText(this);
-        iters.setHint("#iterations");
+        iters.setHint("#iterations per vector");
         iters.setInputType(InputType.TYPE_CLASS_NUMBER);
 
         EditText numElems = new EditText(this);
         numElems.setHint("#elems as power of 2");
         numElems.setInputType(InputType.TYPE_CLASS_NUMBER);
+
+        EditText numVecs = new EditText(this);
+        numVecs.setHint("#vectors to generate randomly");
+        numVecs.setInputType(InputType.TYPE_CLASS_NUMBER);
 
         TextView resultView = new TextView(this);
         TextView resultView2 = new TextView(this);
@@ -81,12 +85,13 @@ public class MainActivity extends AppCompatActivity {
                 String dir_path = dir.getAbsolutePath();
                 String iters_val = iters.getText().toString();
                 String numElemsVal = numElems.getText().toString();
+                String numVecsVal = numVecs.getText().toString();
                 if (TextUtils.isDigitsOnly(iters_val) && !TextUtils.isEmpty(iters_val)
                 && TextUtils.isDigitsOnly(numElemsVal) && !TextUtils.isEmpty(numElemsVal)) {
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
-                            String r = g.runMSMRandom(dir_path, iters_val, numElemsVal);
+                            String r = g.runMSMRandomMultipleVecs(dir_path, iters_val, numElemsVal, numVecsVal);
                             String result = "Mean time to run with random elements is: ";
                             resultView.setText(result);
                             resultView2.setText(r);
@@ -124,6 +129,7 @@ public class MainActivity extends AppCompatActivity {
             linearLayout.addView(btnShowFile);
             linearLayout.addView(btnShow);
             linearLayout.addView(iters);
+            linearLayout.addView(numVecs);
             linearLayout.addView(numElems);
             linearLayout.addView(resultView);
             linearLayout.addView(resultView2);
