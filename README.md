@@ -30,7 +30,9 @@ When you modify the Rust libraries, build the modified library for inclusion in 
 A number of static test vectors to check the basic correctness of the MSM implementation are
 included, as described in the prize specification.
 
-To modify the fixed test vectors, add the new test vector files to  `android/ZPrize/app/src/main/assets/points` and `android/ZPrize/app/src/main/assets/scalars`, then recompile the app. To generate new test vector files, first generate the vectors, then run `serialize_input` once per vector with the same directory specified, with the `append` option set to `true`. This process is demonstrated in `src/main.rs` for one vector. 
+To modify the fixed test vectors, add the new test vector files to  `android/ZPrize/app/src/main/assets/points` and `android/ZPrize/app/src/main/assets/scalars`, then recompile the app. 
+
+To generate new test vector files, first generate the vectors, then run `serialize_input` once per vector with the same directory specified, with the `append` option set to `true`. This process is demonstrated in `src/main.rs` for one vector. 
 
 ## Benchmarking on host
 
