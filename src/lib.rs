@@ -155,16 +155,16 @@ pub fn benchmark_msm(
         let scalars = &scalars_vec[idx];
 
         let mut total_duration = Duration::ZERO;
-        for i in 0..iterations {
+        for _i in 0..iterations {
             let start = Instant::now();
             let result = ark_ec::msm::VariableBaseMSM::multi_scalar_mul(&points[..], &scalars[..]);
             let time = start.elapsed();
-            writeln!(output_file, "iteration {}: {:?}", i + 1, time)?;
+            //writeln!(output_file, "iteration {}: {:?}", i + 1, time)?;
             result.serialize(&output_result_file)?;
             total_duration += time;
         }
         let mean = total_duration / iterations;
-        writeln!(output_file, "Mean across all iterations: {:?}", mean)?;
+        writeln!(output_file, "Time for vector {}: {:?}", idx, mean)?;
         println!(
             "Average time to execute MSM with {} points and {} scalars and {} iterations is: {:?}",
             points.len(),
@@ -194,7 +194,7 @@ pub mod android {
         env: JNIEnv,
         _: JClass,
         java_dir: JString,
-        java_iters: JString,
+        //java_iters: JString,
         java_num_elems: JString,
     ) -> jstring {
         let mut rng = thread_rng();
@@ -212,9 +212,10 @@ pub mod android {
         let dir = env.get_string(java_dir).expect("invalid string").as_ptr();
         let rust_dir = CStr::from_ptr(dir).to_str().expect("string invalid");
 
-        let iters = env.get_string(java_iters).expect("invalid string").as_ptr();
+        /*let iters = env.get_string(java_iters).expect("invalid string").as_ptr();
         let rust_iters = CStr::from_ptr(iters).to_str().expect("string invalid");
-        let iters_val: u32 = rust_iters.parse().unwrap();
+        let iters_val: u32 = rust_iters.parse().unwrap();*/
+        let iters_val = 1;
 
         let mut points_vec = Vec::new();
         let mut scalars_vec = Vec::new();
@@ -234,7 +235,7 @@ pub mod android {
         env: JNIEnv,
         _: JClass,
         java_dir: JString,
-        java_iters: JString,
+        //java_iters: JString,
         java_num_elems: JString,
         java_num_vecs: JString,
     ) -> jstring {
@@ -256,9 +257,10 @@ pub mod android {
         let rust_num_vecs = CStr::from_ptr(num_vecs).to_str().expect("string invalid");
         let num_vecs_val: u32 = rust_num_vecs.parse().unwrap();
 
-        let iters = env.get_string(java_iters).expect("invalid string").as_ptr();
+        /*let iters = env.get_string(java_iters).expect("invalid string").as_ptr();
         let rust_iters = CStr::from_ptr(iters).to_str().expect("string invalid");
-        let iters_val: u32 = rust_iters.parse().unwrap();
+        let iters_val: u32 = rust_iters.parse().unwrap();*/
+        let iters_val = 1;
 
         let mut points_vec = Vec::new();
         let mut scalars_vec = Vec::new();
@@ -292,14 +294,15 @@ pub mod android {
         env: JNIEnv,
         _: JClass,
         java_dir: JString,
-        java_iters: JString,
+//        java_iters: JString,
     ) -> jstring {
         let dir = env.get_string(java_dir).expect("invalid string").as_ptr();
         let rust_dir = CStr::from_ptr(dir).to_str().expect("string invalid");
 
-        let iters = env.get_string(java_iters).expect("invalid string").as_ptr();
+        /*let iters = env.get_string(java_iters).expect("invalid string").as_ptr();
         let rust_iters = CStr::from_ptr(iters).to_str().expect("string invalid");
-        let iters_val: u32 = rust_iters.parse().unwrap();
+        let iters_val: u32 = rust_iters.parse().unwrap();*/
+        let iters_val = 1;
 
         let (points, scalars) = deserialize_input(&rust_dir).unwrap();
         let mean_time = benchmark_msm(&rust_dir, &points, &scalars, iters_val).unwrap();
