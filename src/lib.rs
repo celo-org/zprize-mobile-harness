@@ -7,9 +7,10 @@ use ark_serialize::Write;
 use ark_std::rand::Rng;
 use ark_std::Zero;
 use duration_string::DurationString;
-
+use rand::SeedableRng;
 use std::cmp;
 use rand::RngCore;
+use rand_chacha::ChaCha20Rng;
 use std::fs::File;
 use std::time::Duration;
 use std::time::Instant;
@@ -240,6 +241,9 @@ pub mod android {
         java_num_vecs: JString,
     ) -> jstring {
         let mut rng = thread_rng();
+        let mut seed: [u8; 32] = [0; 32];
+        rng.fill_bytes(&mut seed[..]);
+        let mut chacha_rng = ChaCha20Rng::from_seed(seed);
         let base: i32 = 2;
 
         let num_elems = env
@@ -265,7 +269,7 @@ pub mod android {
         let mut points_vec = Vec::new();
         let mut scalars_vec = Vec::new();
         for _i in 0..num_vecs_val {
-            let (points, scalars) = gen_random_vectors(num_elems_exp.try_into().unwrap(), &mut rng);
+            let (points, scalars) = gen_random_vectors(num_elems_exp.try_into().unwrap(), &mut chacha_rng);
             points_vec.push(points);
             scalars_vec.push(scalars);
         }

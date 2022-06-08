@@ -80,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 resultView.setText("Running on random vectors");
+                resultView2.setText("");
                 RustMSM g = new RustMSM();
                 File dir = getFilesDir();
                 String dir_path = dir.getAbsolutePath();
@@ -105,6 +106,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 resultView.setText("Currently running test vectors");
+                resultView2.setText("");
                 RustMSM g = new RustMSM();
                 File dir = getFilesDir();
                 String dir_path = dir.getAbsolutePath();
