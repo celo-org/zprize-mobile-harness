@@ -12,7 +12,6 @@ Building the Android app can be accomplished with Android Studio:
 3. Use Android Studio's device manager to select either an emulator or physical device.
 4. Install the app on that device using the Run > Run 'app' menu action.
 
-=======
 ### Rust library
 
 Prebuilt libraries are available in this repository as `android/ZPrize/app/src/main/jniLibs/armeabi-v7a`.
