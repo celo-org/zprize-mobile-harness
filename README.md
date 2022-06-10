@@ -21,6 +21,9 @@ When you modify the Rust libraries, build the modified library for inclusion in 
 3. Copy `target/armv7-linux-androideabi/release/libcelo_zprize.so` to `android/ZPrize/app/src/main/jniLibs/armeabi-v7a/libmsm.so`.
 4. Rebuild and install the app as described above.
 
+Building for `aarch64` can also be achieved by with `cross build --target aarch64-linux-android
+--release` and placing the resulting library in `android/ZPrize/app/src/main/jniLibs/arm64-v8a/libmsm.so`
+
 ## Test vectors
 
 A number of static test vectors to check the basic correctness of the MSM implementation are
