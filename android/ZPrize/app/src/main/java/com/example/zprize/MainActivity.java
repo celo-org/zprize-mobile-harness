@@ -34,9 +34,9 @@ public class MainActivity extends AppCompatActivity {
         btnShowFile.setText("Press to run from test vector file");
         btnShowFile.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
-        /*EditText iters = new EditText(this);
+        EditText iters = new EditText(this);
         iters.setHint("#iterations per vector");
-        iters.setInputType(InputType.TYPE_CLASS_NUMBER);*/
+        iters.setInputType(InputType.TYPE_CLASS_NUMBER);
 
         EditText numElems = new EditText(this);
         numElems.setHint("#elems as power of 2");
@@ -84,15 +84,15 @@ public class MainActivity extends AppCompatActivity {
                 RustMSM g = new RustMSM();
                 File dir = getFilesDir();
                 String dir_path = dir.getAbsolutePath();
-               // String iters_val = iters.getText().toString();
+                String iters_val = iters.getText().toString();
                 String numElemsVal = numElems.getText().toString();
                 String numVecsVal = numVecs.getText().toString();
-                if (/*TextUtils.isDigitsOnly(iters_val) && !TextUtils.isEmpty(iters_val)
-                &&*/ TextUtils.isDigitsOnly(numElemsVal) && !TextUtils.isEmpty(numElemsVal)) {
+                if (TextUtils.isDigitsOnly(iters_val) && !TextUtils.isEmpty(iters_val)
+                && TextUtils.isDigitsOnly(numElemsVal) && !TextUtils.isEmpty(numElemsVal)) {
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
-                            String r = g.runMSMRandomMultipleVecs(dir_path, numElemsVal, numVecsVal);
+                            String r = g.runMSMRandomMultipleVecs(dir_path, iters_val, numElemsVal, numVecsVal);
                             String result = "Mean time to run with random elements is: ";
                             resultView.setText(result);
                             resultView2.setText(r);
@@ -110,19 +110,19 @@ public class MainActivity extends AppCompatActivity {
                 RustMSM g = new RustMSM();
                 File dir = getFilesDir();
                 String dir_path = dir.getAbsolutePath();
-                //String iters_val = iters.getText().toString();
-               // if (TextUtils.isDigitsOnly(iters_val) && !TextUtils.isEmpty(iters_val)) {
+                String iters_val = iters.getText().toString();
+                if (TextUtils.isDigitsOnly(iters_val) && !TextUtils.isEmpty(iters_val)) {
                     Thread t = new Thread(new Runnable() {
                         @Override
                         public void run() {
-                            String r = g.runMSMFile(dir_path);
+                            String r = g.runMSMFile(dir_path, iters_val);
                             String result = "Mean time to run with test vectors is: ";
                             resultView.setText(result);
                             resultView2.setText(r);
                         }
                     });
                     t.start();
-                //}
+                }
             }
         });
 
@@ -130,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
         if (linearLayout != null) {
             linearLayout.addView(btnShowFile);
             linearLayout.addView(btnShow);
-           // linearLayout.addView(iters);
+            linearLayout.addView(iters);
             linearLayout.addView(numVecs);
             linearLayout.addView(numElems);
             linearLayout.addView(resultView);
