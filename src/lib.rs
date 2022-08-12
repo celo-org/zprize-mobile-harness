@@ -97,8 +97,8 @@ pub fn serialize_input(
        let file2 = File::create(scalars_path)?;
        (file1, file2)
     };
-    points.serialize(&f1)?;
-    scalars.serialize(&f2)?;
+    points.serialize_unchecked(&f1)?;
+    scalars.serialize_unchecked(&f2)?;
     Ok(())
 }
 
@@ -118,8 +118,8 @@ pub fn deserialize_input(
     let f2 = File::open(scalars_path)?;
 
     loop {
-        let points = Vec::<Point>::deserialize(&f1);
-        let scalars = Vec::<Scalar>::deserialize(&f2);
+        let points = Vec::<Point>::deserialize_unchecked(&f1);
+        let scalars = Vec::<Scalar>::deserialize_unchecked(&f2);
 
         let points = match points {
             Ok(x) => x,

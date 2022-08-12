@@ -6,7 +6,7 @@ fn main() {
     println!("Generating elements");
     let dir = ".";
     let base: i32 = 2;
-    let n_elems = base.pow(8);
+    let n_elems = base.pow(16);
     let (points, scalars) = gen_zero_vectors(n_elems.try_into().unwrap(), &mut rng);
     serialize_input(".", &points, &scalars, true).unwrap();
     let (points, scalars) = deserialize_input(dir).unwrap();
