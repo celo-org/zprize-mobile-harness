@@ -44,3 +44,10 @@ On the Android device, output files were stored to `data/data/com.example.zprize
 The output group elements of the MSM, one per iteration, are stored in `result.txt`.
 The time per iteration is recorded in `resulttimes.txt`.
 When running test vectors, the files will contain the results for each vector of inputs in sequence.
+
+Pulling files from the device filesystem to your host can be accomplished with Android Studio or
+with ADB. Below is an example for getting the `resulttimes.txt` file.
+
+```bash
+adb -d shell 'run-as com.example.zprize cat /data/data/com.example.zprize/files/resulttimes.txt' > resulttimes.txt
+```

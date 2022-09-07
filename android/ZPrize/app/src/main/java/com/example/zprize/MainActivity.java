@@ -1,26 +1,33 @@
 package com.example.zprize;
 
-import androidx.appcompat.app.AppCompatActivity;
-
-import java.io.File;
-import java.io.InputStream;
-import java.io.FileOutputStream;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.InputType;
 import android.text.TextUtils;
-import android.widget.EditText;
-import android.widget.TextView;
-import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.Toast;
+import android.widget.TextView;
 
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+
+@RequiresApi(api = Build.VERSION_CODES.P)
 public class MainActivity extends AppCompatActivity {
+    private final Handler mainThreadHandler = Handler.createAsync(Looper.getMainLooper());
+    private static final String TAG = "ZPrizeTestHarness";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -51,28 +58,31 @@ public class MainActivity extends AppCompatActivity {
 
         File filePoints = new File(getFilesDir()+"/points");
         try {
-
             InputStream is = getAssets().open("points");
-            int size = is.available();
-            byte[] buffer = new byte[size];
-            is.read(buffer);
-            is.close();
-
             FileOutputStream fos = new FileOutputStream(filePoints);
-            fos.write(buffer);
+            int size = Math.min(is.available(), 1 << 14);
+            byte[] buffer = new byte[size];
+            while (true) {
+                int len = is.read(buffer);
+                if (len == -1) { break; }
+                fos.write(buffer, 0, len);
+            }
+            is.close();
             fos.close();
         } catch (Exception e) { throw new RuntimeException(e); }
+
         File fileScalars = new File(getFilesDir()+"/scalars");
         try {
-
             InputStream is = getAssets().open("scalars");
-            int size = is.available();
-            byte[] buffer = new byte[size];
-            is.read(buffer);
-            is.close();
-
             FileOutputStream fos = new FileOutputStream(fileScalars);
-            fos.write(buffer);
+            int size = Math.min(is.available(), 1 << 14);
+            byte[] buffer = new byte[size];
+            while (true) {
+                int len = is.read(buffer);
+                if (len == -1) { break; }
+                fos.write(buffer, 0, len);
+            }
+            is.close();
             fos.close();
         } catch (Exception e) { throw new RuntimeException(e); }
 
@@ -81,7 +91,6 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 resultView.setText("Running on random vectors");
                 resultView2.setText("");
-                RustMSM g = new RustMSM();
                 File dir = getFilesDir();
                 String dir_path = dir.getAbsolutePath();
                 String iters_val = iters.getText().toString();
@@ -92,12 +101,23 @@ public class MainActivity extends AppCompatActivity {
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
+                            RustMSM g = new RustMSM();
+                            Log.i(TAG, "Starting MSM with random inputs");
                             String r = g.runMSMRandomMultipleVecs(dir_path, iters_val, numElemsVal, numVecsVal);
-                            String result = "Mean time to run with random elements is: ";
-                            resultView.setText(result);
-                            resultView2.setText(r);
+                            Log.i(TAG, "Finished MSM with random inputs");
+                            mainThreadHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    String result = "Mean time to run with random elements is: ";
+                                    resultView.setText(result);
+                                    resultView2.setText(r);
+                                }
+                            });
                         }
                     }).start();
+                } else {
+                    resultView.setText("Valid number of iterations, vectors, and elements per vector must be provided");
+                    resultView2.setText("");
                 }
             }
         });
@@ -105,23 +125,33 @@ public class MainActivity extends AppCompatActivity {
         btnShowFile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                resultView.setText("Currently running test vectors");
-                resultView2.setText("");
-                RustMSM g = new RustMSM();
                 File dir = getFilesDir();
                 String dir_path = dir.getAbsolutePath();
                 String iters_val = iters.getText().toString();
                 if (TextUtils.isDigitsOnly(iters_val) && !TextUtils.isEmpty(iters_val)) {
-                    Thread t = new Thread(new Runnable() {
+                    resultView.setText("Currently running test vectors");
+                    resultView2.setText("");
+
+                    new Thread(new Runnable() {
                         @Override
                         public void run() {
+                            RustMSM g = new RustMSM();
+                            Log.i(TAG, "Starting MSM with fixed inputs");
                             String r = g.runMSMFile(dir_path, iters_val);
-                            String result = "Mean time to run with test vectors is: ";
-                            resultView.setText(result);
-                            resultView2.setText(r);
+                            Log.i(TAG, "Finished MSM with fixed inputs");
+                            mainThreadHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    String result = "Mean time to run with test vectors is: ";
+                                    resultView.setText(result);
+                                    resultView2.setText(r);
+                                }
+                            });
                         }
-                    });
-                    t.start();
+                    }).start();
+                } else {
+                    resultView.setText("Valid number of iterations must be provided");
+                    resultView2.setText("");
                 }
             }
         });
@@ -136,7 +166,6 @@ public class MainActivity extends AppCompatActivity {
             linearLayout.addView(resultView);
             linearLayout.addView(resultView2);
         }
-
     }
 
     static {
