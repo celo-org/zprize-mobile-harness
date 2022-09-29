@@ -1,5 +1,5 @@
 use celo_zprize::{
-    benchmark_msm, deserialize_input, gen_random_vectors, gen_zero_vectors, serialize_input,
+    benchmark_msm, deserialize_input, gen_random_vectors, gen_zero_scalars_zero_points, gen_zero_scalars_random_points, serialize_input,
     FileInputIterator,
 };
 use rand::thread_rng;

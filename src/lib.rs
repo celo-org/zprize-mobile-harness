@@ -56,19 +56,76 @@ pub fn gen_random_vectors<R: RngCore>(n: usize, rng: &mut R) -> Instance {
     (points, scalars)
 }
 
-pub fn gen_zero_vectors<R: RngCore>(n: usize, rng: &mut R) -> Instance {
+pub fn gen_zero_scalars_random_points<R: RngCore>(n: usize, rng: &mut R) -> Instance {
+    let num_bytes = bls377::Fr::zero().serialized_size();
+    let mut points = Vec::<Point>::new();
+    let mut scalars = Vec::<Scalar>::new();
+    let mut scalar;
+    for _i in 0..n {
+        scalar = bls377::Fr::zero();
+        scalars.push(scalar.into_repr());
+
+        let point: bls377::G1Projective = rng.gen();
+        points.push(point.into());
+    }
+    (points, scalars)
+}
+
+pub fn gen_zero_scalars_zero_points<R: RngCore>(n: usize, rng: &mut R) -> Instance {
+    let num_bytes = bls377::Fr::zero().serialized_size();
+    let mut points = Vec::<Point>::new();
+    let mut scalars = Vec::<Scalar>::new();
+    let mut scalar;
+    for _i in 0..n {
+        scalar = bls377::Fr::zero();
+        scalars.push(scalar.into_repr());
+
+        let point: bls377::G1Projective = bls377::G1Projective::zero();
+        points.push(point.into());
+    }
+    (points, scalars)
+}
+
+pub fn gen_random_scalars_zero_points<R: RngCore>(n: usize, rng: &mut R) -> Instance {
     let num_bytes = bls377::Fr::zero().serialized_size();
     let mut points = Vec::<Point>::new();
     let mut scalars = Vec::<Scalar>::new();
     let mut bytes = vec![0; num_bytes];
     let mut scalar;
     for _i in 0..n {
-        rng.fill_bytes(&mut bytes[..]);
-        scalar = bls377::Fr::zero();
-        scalars.push(scalar.into_repr());
+        loop {
+            rng.fill_bytes(&mut bytes[..]);
+            scalar = bls377::Fr::from_random_bytes(&bytes);
+            if scalar.is_some() {
+                break;
+            }
+        }
+        scalars.push(scalar.unwrap().into_repr());
 
-        let point: bls377::G1Projective = rng.gen();
+        let point: bls377::G1Projective = bls377::G1Projective::zero();
         points.push(point.into());
+    }
+    (points, scalars)
+}
+
+pub fn gen_random_scalars_identical_points<R: RngCore>(n: usize, rng: &mut R) -> Instance {
+    let num_bytes = bls377::Fr::zero().serialized_size();
+    let mut points = Vec::<Point>::new();
+    let mut scalars = Vec::<Scalar>::new();
+    let mut bytes = vec![0; num_bytes];
+    let mut scalar;
+    let point: bls377::G1Projective = rng.gen();
+    for _i in 0..n {
+        loop {
+            rng.fill_bytes(&mut bytes[..]);
+            scalar = bls377::Fr::from_random_bytes(&bytes);
+            if scalar.is_some() {
+                break;
+            }
+        }
+        scalars.push(scalar.unwrap().into_repr());
+
+        points.push(point.clone().into());
     }
     (points, scalars)
 }
